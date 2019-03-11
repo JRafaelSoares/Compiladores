@@ -4,12 +4,17 @@
 #include <errno.h>
 #include "node.h"
 #include "y.tab.h"
+
 void yyerror(char *s);
+
+int counter = 0;
 %}
 %x COM1 COM2 STR1
 %%
-<COM1>.|\n	;
+
+
 <COM1>"=>"	BEGIN 0;
+<COM1>.|\n	;
 
 <COM2>[^\n]	;
 <COM2>\n 	BEGIN 0;
