@@ -12,8 +12,8 @@ int counter = 0;
 %x COM1 COM2 STR1
 %%
 
-
-<COM1>"=>"	BEGIN 0;
+<COM1>"=<" counter++;
+<COM1>"=>"	counter--; if(counter < 0) {counter = 0; BEGIN 0;};
 <COM1>.|\n	;
 
 <COM2>[^\n]	;
@@ -40,6 +40,13 @@ int counter = 0;
 "downto"											return DOWNTO;
 "break"												return BREAK;
 "continue"											return CONTINUE;
+">="	return GE;
+"<="	return LE;
+"<>"	return DIF;
+":="	return ASSIGN;
+"++"	return INC;
+"--"	return DEC;
+
 
 \"([^\"])*\"	yylval.s = malloc(yyleng); *yylval.s = 0; REJECT;
 \" BEGIN STR1;
@@ -50,7 +57,8 @@ int counter = 0;
 
 [0-9]+			yylval.i = strtol(yytext, 0, 10); 	return INT; 
 [a-zA-Z][a-zA-Z_0-9]* 	yylval.s = strdup(yytext); 	return ID;
-[0-9]+\.[0-9]+										yylval.d =  strtod(yytext, NULL); ECHO; return NUM;
+[0-9]+\.[0-9]+										yylval.d =  strtod(yytext, NULL); return NUM;
+[-+*/%<>=!|&~] return *yytext;
 .													yyerror("Unknown character");
 %%
 int yywrap(void) { return 1; }
