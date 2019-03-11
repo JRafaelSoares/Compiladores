@@ -51,15 +51,18 @@ int counter = 0;
 \"([^\"])*\"	yylval.s = malloc(yyleng); *yylval.s = 0; REJECT;
 \" BEGIN STR1;
 <STR1>\"	BEGIN 0; printf("%s\n", yylval.s); 		return STR;
+<STR1>\\n		strcat(yylval.s, "\n");
+<STR1>\\r		strcat(yylval.s, "\r");
+<STR1>\\t		strcat(yylval.s, "\t");
 <STR1>\\([0-9a-fA-F]{1,2}) yylval.s[strlen(yylval.s)] = (char)(int)strtol(yytext+1, NULL, 16); yylval.s[strlen(yylval.s)+1] = '\0';
 <STR1>\\\" strcat(yylval.s, "\"");
 <STR1>.|\n  strcat(yylval.s, yytext);
 
-[0-9]+			yylval.i = strtol(yytext, 0, 10); 	return INT; 
+-?[0-9]+			yylval.i = strtol(yytext, 0, 10); 	return INT; 
 [a-zA-Z][a-zA-Z_0-9]* 	yylval.s = strdup(yytext); 	return ID;
-[0-9]+\.[0-9]+										yylval.d =  strtod(yytext, NULL); return NUM;
+-?[0-9]+\.[0-9]+										yylval.d =  strtod(yytext, NULL); return NUM;
 [-+*/%<>=!|&~] return *yytext;
-.													yyerror("Unknown character");
+.													ECHO; yyerror("Unknown character");
 %%
 int yywrap(void) { return 1; }
 char *getyytext() { return yytext; }
