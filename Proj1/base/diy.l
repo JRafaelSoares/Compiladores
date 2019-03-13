@@ -5,8 +5,9 @@
 #include "node.h"
 #include "y.tab.h"
 
-void yyerror(char *s);
-
+int yyerror(char *s);
+int octal(char *s);
+int integer(char *integer);
 int counter = 0;
 %}
 %x COM1 COM2 STR1
@@ -40,12 +41,12 @@ int counter = 0;
 "downto"											return DOWNTO;
 "break"												return BREAK;
 "continue"											return CONTINUE;
-">="	return GE;
-"<="	return LE;
-"<>"	return DIF;
-":="	return ASSIGN;
-"++"	return INC;
-"--"	return DEC;
+">="												return GE;
+"<="												return LE;
+"<>"												return DIF;
+":="												return ASSIGN;
+"++"												return INC;
+"--"												return DEC;
 
 
 \"([^\"])*\"	yylval.s = malloc(yyleng); *yylval.s = 0; REJECT;
@@ -58,12 +59,39 @@ int counter = 0;
 <STR1>\\\" strcat(yylval.s, "\"");
 <STR1>.|\n  strcat(yylval.s, yytext);
 
--?[0-9]+			yylval.i = strtol(yytext, 0, 10); 	return INT; 
+0[0-9]*					yylval.i = octal(yytext); return INT;
+-?[1-9][0-9]*			yylval.i = integer(yytext); return INT; 
 [a-zA-Z][a-zA-Z_0-9]* 	yylval.s = strdup(yytext); 	return ID;
--?[0-9]+\.[0-9]+										yylval.d =  strtod(yytext, NULL); return NUM;
-[-+*/%<>=!|&~] return *yytext;
-.													ECHO; yyerror("Unknown character");
+[-+*/%<>=!|&~] 			return *yytext;
+-?[1-9][0-9]*\.[0-9]+		yylval.d =  strtod(yytext, NULL); return NUM;
+.							return yyerror("Unknown character"); return -1;	
+
 %%
 int yywrap(void) { return 1; }
 char *getyytext() { return yytext; }
 
+int integer(char *integer)
+{
+	int value = strtol(integer, 0, 10);
+	if(value <= 0){
+		return -1;
+	}
+	return value;
+}
+
+//Check from B programming
+int octal(char *s)
+{
+  int i, a = 0, b = 0;
+
+  for (i = 0; i < strlen(s); i++) {
+    if (s[i] < '0' || s[i] > '9') break;
+    b = b * 8 + s[i] - '0';
+    if (b < a) {
+      yyerror("octal overflow");
+      break;
+    }
+    a = b;
+  }
+  return a;
+}

@@ -28,15 +28,21 @@ int yyerror(char *s);
 file	:
 	;
 %%
-int yyerror(char *s) { yynerrs++; return 1; }
+int yyerror(char *s) {printf("%s\n", s); yynerrs++; return 1; }
 int main(int argc, char *argv[]) {
 	    extern YYSTYPE yylval;
 	    int tk;
-	    while ((tk = yylex())) 
-		    if (tk > YYERRCODE)
+	    while ((tk = yylex())) {
+		    if (tk > YYERRCODE){
+
 			    printf("%d:\t%s\n", tk, yyname[tk]);
-		    else
-			    printf("%d:\t%c\n", tk, tk);
+		    }
+		    else{
+		    	printf("ola");
+			    //printf("%d:\t%c\n", tk, tk);
+			    break;
+		    }
+		}
 	    return yynerrs;
     }
 
