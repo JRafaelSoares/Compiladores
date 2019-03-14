@@ -40,7 +40,6 @@ int main(int argc, char *argv[]) {
 		    }
 		    else{
 			    printf("%d:\t%c\n", tk, tk);
-			    return yynerrs;
 		    }
 		}
 	    return yynerrs;

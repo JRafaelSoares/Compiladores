@@ -52,7 +52,7 @@ int counter = 0;
 
 \"([^\"])*\"	yylval.s = malloc(yyleng); *yylval.s = 0; REJECT;
 \" BEGIN STR1;
-<STR1>\"	BEGIN 0; printf("%s\n", yylval.s); return  STR;
+<STR1>\"	BEGIN 0; return  STR;
 <STR1>\\n		strcat(yylval.s, "\n");
 <STR1>\\r		strcat(yylval.s, "\r");
 <STR1>\\t		strcat(yylval.s, "\t");
@@ -62,12 +62,12 @@ int counter = 0;
 
 "0b"[01]+       yylval.i = binary(yytext+2); return INT;
 0[0-9]*					yylval.i = octal(yytext); return INT;
--?[1-9][0-9]*			yylval.i = integer(yytext); return INT; 
+[1-9][0-9]*			yylval.i = integer(yytext); return INT; 
 [a-zA-Z][a-zA-Z_0-9]* 	yylval.s = strdup(yytext); 	return ID;
 [-+*/%<>=!|&~] 			return *yytext;
-[#{}()\[\];,]       return *yytext;
--?[1-9][0-9]*\.[0-9]+		yylval.d =  strtod(yytext, NULL); return NUM;
+[1-9][0-9]*\.[0-9]+		yylval.d =  strtod(yytext, NULL); return NUM;  
 [ \n\r\t]+    ;
+[\#\{\}\(\)\[\]\;\,]            return *yytext;
 .							return yyerror("Unknown character"); 
 
 %%
