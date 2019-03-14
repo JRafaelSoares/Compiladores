@@ -29,6 +29,7 @@ file	:
 	;
 %%
 int yyerror(char *s) {printf("%s\n", s); yynerrs++; return 1; }
+
 int main(int argc, char *argv[]) {
 	    extern YYSTYPE yylval;
 	    int tk;
@@ -38,9 +39,8 @@ int main(int argc, char *argv[]) {
 			    printf("%d:\t%s\n", tk, yyname[tk]);
 		    }
 		    else{
-		    	printf("ola");
-			    //printf("%d:\t%c\n", tk, tk);
-			    break;
+			    printf("%d:\t%c\n", tk, tk);
+			    return yynerrs;
 		    }
 		}
 	    return yynerrs;

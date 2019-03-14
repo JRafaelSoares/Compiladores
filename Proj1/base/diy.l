@@ -8,6 +8,7 @@
 int yyerror(char *s);
 int octal(char *s);
 int integer(char *integer);
+int binary(char *binary);
 int counter = 0;
 %}
 %x COM1 COM2 STR1
@@ -51,30 +52,33 @@ int counter = 0;
 
 \"([^\"])*\"	yylval.s = malloc(yyleng); *yylval.s = 0; REJECT;
 \" BEGIN STR1;
-<STR1>\"	BEGIN 0; printf("%s\n", yylval.s); 		return STR;
+<STR1>\"	BEGIN 0; printf("%s\n", yylval.s); return  STR;
 <STR1>\\n		strcat(yylval.s, "\n");
 <STR1>\\r		strcat(yylval.s, "\r");
 <STR1>\\t		strcat(yylval.s, "\t");
-<STR1>\\([0-9a-fA-F]{1,2}) yylval.s[strlen(yylval.s)] = (char)(int)strtol(yytext+1, NULL, 16); yylval.s[strlen(yylval.s)+1] = '\0';
+<STR1>\\([0-9a-fA-F]{1,2})  yylval.s[strlen(yylval.s)] = (char)(int)strtol(yytext+1, NULL, 16); yylval.s[strlen(yylval.s)+1] = '\0';
 <STR1>\\\" strcat(yylval.s, "\"");
-<STR1>.|\n  strcat(yylval.s, yytext);
+<STR1>.|\n  strcat(yylval.s, yytext); 
 
+"0b"[01]+       yylval.i = binary(yytext+2); return INT;
 0[0-9]*					yylval.i = octal(yytext); return INT;
 -?[1-9][0-9]*			yylval.i = integer(yytext); return INT; 
 [a-zA-Z][a-zA-Z_0-9]* 	yylval.s = strdup(yytext); 	return ID;
 [-+*/%<>=!|&~] 			return *yytext;
+[#{}()\[\];,]       return *yytext;
 -?[1-9][0-9]*\.[0-9]+		yylval.d =  strtod(yytext, NULL); return NUM;
-.							return yyerror("Unknown character"); return -1;	
+[ \n\r\t]+    ;
+.							return yyerror("Unknown character"); 
 
 %%
 int yywrap(void) { return 1; }
 char *getyytext() { return yytext; }
 
 int integer(char *integer)
-{
+{	
 	int value = strtol(integer, 0, 10);
 	if(value <= 0){
-		return -1;
+    yyerror("integer overflow");
 	}
 	return value;
 }
@@ -95,3 +99,17 @@ int octal(char *s)
   }
   return a;
 }
+
+int binary(char *binary){
+
+  int value = strtol(binary, 0, 2);
+  if(value < 0){
+    yyerror("binary overflow");
+  }
+  return value;
+}
+
+void StringToHex(char *yylval, char *text){
+
+}
+
