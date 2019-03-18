@@ -1,0 +1,30 @@
+
+integer strcmp(string *str1, string *str2) {
+	cnt := -1
+
+	do {
+	cnt := cnt + 1
+	if str1[cnt] > str2[cnt] then strcmp := 1
+	else if str1[cnt] < str2[cnt] then strcmp := -1
+
+	} while str1[cnt] <> "\0" & str2[cnt] <> "\0";
+
+	strcmp := 0
+};
+
+string *strcpy(string *dest, const string *src) {
+	cnt := -1
+
+	do{
+		cnt := cnt + 1
+		dest[cnt] := src[cnt]
+	} while src[i] <> "\0";
+
+	strcpy := dest
+}
+
+string *strchr(cont string *str, integer c) {
+	do
+
+	while *str
+}

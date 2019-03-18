@@ -1,0 +1,12 @@
+public number factorial(integer n) {
+	
+	res := 1
+	cnt := n
+	do
+		res := res * n
+		n := n - 1
+
+	while n > 1;
+
+	factorial := res
+}

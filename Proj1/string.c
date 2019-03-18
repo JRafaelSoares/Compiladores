@@ -14,7 +14,7 @@ int strcmp(const char *str1, const char *str2){
 		}	
 	} while(str1[i] != '\0' && str2[i] != '\0');
 	return 0;
-}
+} 
 
 char *strcpy(char *dest, const char *src) {
 
@@ -26,18 +26,20 @@ char *strcpy(char *dest, const char *src) {
 	return dest;
 }
 
+char *strchr(const char *str, int c) {
+	while(*str != (char)c){
+		if (!*str++)
+			return 0;
+	}
+	return (char *)str;
+}
 int main() {
-	char* coco = "";
-	char* xixi = "as";
-	printf("%d\n", strcmp(coco,xixi));
+	const char xixi[] = "Ola o meu nome e Rafael";
+	const char coco[] = "Ola o meu nome e Rafael";
 
-	char* des = (char *) malloc(sizeof(char)*5);
+	char *ret;
+	printf("%d\n", strcmp(xixi, coco));
 
-	printf("%s\n", strcpy(des, xixi));
-
-	xixi = "asd";
-
-	printf("%s\n", xixi);
 	return 0;
 }
 

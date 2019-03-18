@@ -1,0 +1,13 @@
+initial := 100003
+mul := 27983
+incr := 149
+mod := 1000000
+ 
+public void srand(integer i) {
+	initial := i
+}
+
+public integer rand() {
+	rand := (initial * mul + incr) % mod
+};
+

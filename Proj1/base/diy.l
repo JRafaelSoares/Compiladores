@@ -66,9 +66,9 @@ int counter = 0;
 [a-zA-Z][a-zA-Z_0-9]* 	yylval.s = strdup(yytext); 	return ID;
 [-+*/%<>=!|&~] 			return *yytext;
 [1-9][0-9]*\.[0-9]+		yylval.d =  strtod(yytext, NULL); return NUM;  
+[\#\{\}\(\)\[\]\;\,]    return *yytext;
 [ \n\r\t]+    ;
-[\#\{\}\(\)\[\]\;\,]            return *yytext;
-.							return yyerror("Unknown character"); 
+.						return yyerror("Unknown character"); 
 
 %%
 int yywrap(void) { return 1; }
@@ -76,11 +76,17 @@ char *getyytext() { return yytext; }
 
 int integer(char *integer)
 {	
-	int value = strtol(integer, 0, 10);
-	if(value <= 0){
+  if(strlen(integer) > 10){
     yyerror("integer overflow");
-	}
-	return value;
+    return -1;
+  }
+  else{
+  	int value = strtol(integer, 0, 10);
+  	if(value <= 0){
+      yyerror("integer overflow");
+  	}
+  	return value;
+  }
 }
 
 //Check from B programming

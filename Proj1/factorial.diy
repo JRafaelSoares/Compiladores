@@ -1,0 +1,12 @@
+public number factorial(integer n);
+public void printd(number n)
+public integer atoi(string s)
+
+public integer entry (integer argc, string *argv, string *envp) {
+	if argc = 1 then {
+		printd(factorial(atoi(argv[1])))
+	}
+	else printd(factorial(5))
+
+	entry := 0
+};
