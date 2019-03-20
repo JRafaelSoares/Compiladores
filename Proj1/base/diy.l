@@ -4,11 +4,12 @@
 #include <errno.h>
 #include "node.h"
 #include "y.tab.h"
-
+#include <math.h>
 int yyerror(char *s);
 int octal(char *s);
 int integer(char *integer);
 int binary(char *binary);
+double number(char *s);
 int counter = 0;
 %}
 %x COM1 COM2 STR1
@@ -65,7 +66,7 @@ int counter = 0;
 [1-9][0-9]*			yylval.i = integer(yytext); return INT; 
 [a-zA-Z][a-zA-Z_0-9]* 	yylval.s = strdup(yytext); 	return ID;
 [-+*/%<>=!|&~] 			return *yytext;
-[1-9][0-9]*\.[0-9]+		yylval.d =  strtod(yytext, NULL); return NUM;  
+[1-9][0-9]*\.[0-9]+([eE][+-][0-9]+)?		yylval.d = number(yytext); return NUM;  
 [\#\{\}\(\)\[\]\;\,]    return *yytext;
 [ \n\r\t]+    ;
 .						return yyerror("Unknown character"); 
@@ -82,6 +83,7 @@ int integer(char *integer)
   }
   else{
   	int value = strtol(integer, 0, 10);
+    printf("%d\n", value);
   	if(value <= 0){
       yyerror("integer overflow");
   	}
@@ -111,6 +113,16 @@ int binary(char *binary){
   int value = strtol(binary, 0, 2);
   if(value < 0){
     yyerror("binary overflow");
+  }
+  return value;
+}
+
+double number(char *s){
+
+  double value = strtod(s, NULL);
+
+  if(value < 0.0 || value == INFINITY){
+    yyerror("number overflow");
   }
   return value;
 }

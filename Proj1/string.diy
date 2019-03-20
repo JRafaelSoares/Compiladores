@@ -24,7 +24,10 @@ string *strcpy(string *dest, const string *src) {
 }
 
 string *strchr(cont string *str, integer c) {
-	do
+	do {
+		if ~*str++ then strchr := 0
+	}
+	while *str <> c;
 
-	while *str
+	strchr := str
 }

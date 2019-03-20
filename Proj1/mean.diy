@@ -10,15 +10,17 @@ public integer entry (integer argc, string *argv, string *envp) {
 		result := 0.0
 		
 		do {
-			random := 0
-			if iterations > 0 then random := rand()
-			result := result + random
+			random := 100003
 			srand(random)
-			iteration := iteration - 1
+			if iterations > 0 then{ 
+				random := rand()
+				result := result + random
+				iteration := iteration - 1
+			}
 
 		} while iteration > 0
 
-		result := result / num
+		if num > 0 then result := result / num
 
 		printd(result)
 	}
