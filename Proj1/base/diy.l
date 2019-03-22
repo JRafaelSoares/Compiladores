@@ -4,6 +4,7 @@
 #include <errno.h>
 #include "node.h"
 #include "y.tab.h"
+#include <math.h>
 
 int yyerror(char *s);
 int octal(char *s);
@@ -27,7 +28,7 @@ int nFlag = 0;
 <COM2>[\n] 	BEGIN 0;
 
 "=<"		BEGIN COM1;
-"=="		BEGIN COM2; if(nFlag != 0){return 59;}
+"=="		BEGIN COM2; if(nFlag != 0){nFlag = 0; return 59;}
 
 "integer"			nFlag = 0;	return INTEGER;
 "string"			nFlag = 0;	return STRING;
@@ -87,13 +88,15 @@ char *getyytext() { return yytext; }
 
 int integer(char *integer)
 {	
+    int MAX_INT = 2147483647;
     errno = 0;
-  	int value = strtol(integer, 0, 10);
-  	if(errno == ERANGE){
+
+  	long int value = strtol(integer, 0, 10);
+  	if(errno == ERANGE || value > MAX_INT){
       yyerror("integer overflow");
   	  return 0;
     }
-  	return value;
+  	return (int)value;
 }
 
 //Check from B programming
@@ -115,9 +118,11 @@ int octal(char *s)
 
 int binary(char *binary){
 
+  int MAX_INT = 2147483647;
+
   errno = 0;
-  int value = strtol(binary, 0, 2);
-  if(errno == ERANGE){
+  long int value = strtol(binary, 0, 2);
+  if(errno == ERANGE || value > MAX_INT){
     yyerror("binary overflow");
     return 0;
   }
@@ -129,7 +134,7 @@ double number(char *s){
   errno = 0;
   double value = strtod(s, NULL);
 
-  if(errno == ERANGE){
+  if(errno == ERANGE || value == INFINITY){
     yyerror("number overflow");
     return 0;
   }
