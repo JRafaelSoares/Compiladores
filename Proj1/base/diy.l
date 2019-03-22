@@ -4,7 +4,7 @@
 #include <errno.h>
 #include "node.h"
 #include "y.tab.h"
-#include <math.h>
+
 int yyerror(char *s);
 int octal(char *s);
 int integer(char *integer);
@@ -68,7 +68,7 @@ int stringFlag = 0;
 <STR1>\\\" if(stringFlag != 0) {strcat(yylval.s, "\"");}
 <STR1>.|\n  if(stringFlag != 0) {strcat(yylval.s, yytext);}
 
-"0b"[01]+       yylval.i = binary(yytext+2); BEGIN DEL; return INT;
+"0b"[01]+      yylval.i = binary(yytext+2); BEGIN DEL; return INT;
 0[0-9]*					yylval.i = octal(yytext); BEGIN DEL; return INT;
 [1-9][0-9]*			yylval.i = integer(yytext); BEGIN DEL; return INT; 
 [a-zA-Z][a-zA-Z_0-9]* 	yylval.s = strdup(yytext); BEGIN DEL;	return ID;
@@ -89,17 +89,13 @@ char *getyytext() { return yytext; }
 
 int integer(char *integer)
 {	
-  if(strlen(integer) > 10){
-    yyerror("integer overflow");
-    return -1;
-  }
-  else{
+    errno = 0;
   	int value = strtol(integer, 0, 10);
-  	if(value <= 0){
+  	if(errno == ERANGE){
       yyerror("integer overflow");
-  	}
+  	  return 0;
+    }
   	return value;
-  }
 }
 
 //Check from B programming
@@ -121,19 +117,23 @@ int octal(char *s)
 
 int binary(char *binary){
 
+  errno = 0;
   int value = strtol(binary, 0, 2);
-  if(value < 0){
+  if(errno == ERANGE){
     yyerror("binary overflow");
+    return 0;
   }
   return value;
 }
 
 double number(char *s){
 
+  errno = 0;
   double value = strtod(s, NULL);
 
-  if(value < 0.0 || value == INFINITY){
+  if(errno == ERANGE){
     yyerror("number overflow");
+    return 0;
   }
   return value;
 }
@@ -141,7 +141,16 @@ double number(char *s){
 void StringToHex(char *yylval, char *text){
   int size = strlen(yylval);
 
-  yylval[size] = (char)(int)strtol(text+1, NULL, 16); 
+  errno = 0;
+
+  int value = strtol(text+1, NULL, 16);
+
+  if(errno == ERANGE){
+    yyerror("Hexadecimal overflow");
+    yylval[size] = '1';
+    yylval[size+1] = '\0'; 
+  }
+  yylval[size] = (char)value;
   yylval[size+1] = '\0';
 }
 
