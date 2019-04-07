@@ -3,8 +3,6 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
-#include "node.h"
-#include "tabid.h"
 extern int yylex();
 int yyerror(char *s);
 %}
@@ -28,20 +26,36 @@ int yyerror(char *s);
 file	:
 	;
 %%
-int yyerror(char *s) {printf("%s\n", s); yynerrs++; return 1; }
+char *infile = "<<stdin>>";
+
+
+int yyerror(char *s) {
+	extern int yylineno;
+  	extern char *getyytext();
+  	fprintf(stderr, "%s: %s at or before '%s' in line %d\n", infile, s, getyytext(), yylineno);
+  	yynerrs++; return 1; }
 
 int main(int argc, char *argv[]) {
 	    extern YYSTYPE yylval;
 	    int tk;
-	    while ((tk = yylex())) {
-		    if (tk > YYERRCODE){
 
+	    if (argc > 1) {
+    		extern FILE *yyin;
+    		if ((yyin = fopen(infile = argv[1], "r")) == NULL) {
+      			perror(argv[1]);
+      			return 1;
+    		}
+  		}
+
+	    while ((tk = yylex())) {
+		    if (tk > YYERRCODE){		    	
 			    printf("%d:\t%s\n", tk, yyname[tk]);
 		    }
-		    else{
+		    else{		    	
 			    printf("%d:\t%c\n", tk, tk);
 		    }
 		}
+	    
 	    return yynerrs;
     }
 

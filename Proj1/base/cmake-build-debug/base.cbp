@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6"/>
+	<Project>
+		<Option title="base"/>
+		<Option makefile_is_custom="1"/>
+		<Option compiler="gcc"/>
+		<Option virtualFolders="CMake Files\;"/>
+		<Build>
+			<Target title="all">
+				<Option working_dir="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/cmake-build-debug/Makefile&quot;  VERBOSE=1 all"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="rebuild_cache">
+				<Option working_dir="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/cmake-build-debug/Makefile&quot;  VERBOSE=1 rebuild_cache"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="base">
+				<Option output="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/cmake-build-debug/base" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/."/>
+					<Add directory="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/lib"/>
+					<Add directory="/usr/include/c++/7"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/7"/>
+					<Add directory="/usr/include/c++/7/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/cmake-build-debug/Makefile&quot;  VERBOSE=1 base"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="base/fast">
+				<Option output="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/cmake-build-debug/base" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/."/>
+					<Add directory="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/lib"/>
+					<Add directory="/usr/include/c++/7"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/7"/>
+					<Add directory="/usr/include/c++/7/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/cmake-build-debug/Makefile&quot;  VERBOSE=1 base/fast"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="edit_cache">
+				<Option working_dir="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/cmake-build-debug/Makefile&quot;  VERBOSE=1 edit_cache"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+		</Build>
+		<Unit filename="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/Makefile">
+			<Option target="base"/>
+		</Unit>
+		<Unit filename="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/ack.txt">
+			<Option target="base"/>
+		</Unit>
+		<Unit filename="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/bola.txt">
+			<Option target="base"/>
+		</Unit>
+		<Unit filename="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/diy files/factorial.diy">
+			<Option target="base"/>
+		</Unit>
+		<Unit filename="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/diy files/iter.diy">
+			<Option target="base"/>
+		</Unit>
+		<Unit filename="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/diy files/mean.diy">
+			<Option target="base"/>
+		</Unit>
+		<Unit filename="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/diy files/rand.diy">
+			<Option target="base"/>
+		</Unit>
+		<Unit filename="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/diy files/recurs.diy">
+			<Option target="base"/>
+		</Unit>
+		<Unit filename="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/diy files/string.diy">
+			<Option target="base"/>
+		</Unit>
+		<Unit filename="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/diy files/test.diy">
+			<Option target="base"/>
+		</Unit>
+		<Unit filename="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/diy.brg">
+			<Option target="base"/>
+		</Unit>
+		<Unit filename="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/diy.l">
+			<Option target="base"/>
+		</Unit>
+		<Unit filename="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/exs/Makefile">
+			<Option target="base"/>
+		</Unit>
+		<Unit filename="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/exs/ack.diy">
+			<Option target="base"/>
+		</Unit>
+		<Unit filename="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/exs/hello.diy">
+			<Option target="base"/>
+		</Unit>
+		<Unit filename="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/factorial.c">
+			<Option target="base"/>
+		</Unit>
+		<Unit filename="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/inicial.y">
+			<Option target="base"/>
+		</Unit>
+		<Unit filename="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/lex.yy.c">
+			<Option target="base"/>
+		</Unit>
+		<Unit filename="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/lib/Makefile">
+			<Option target="base"/>
+		</Unit>
+		<Unit filename="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/lib/libutil.a">
+			<Option target="base"/>
+		</Unit>
+		<Unit filename="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/lib/main.c">
+			<Option target="base"/>
+		</Unit>
+		<Unit filename="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/lib/main.o">
+			<Option target="base"/>
+		</Unit>
+		<Unit filename="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/lib/node.c">
+			<Option target="base"/>
+		</Unit>
+		<Unit filename="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/lib/node.h">
+			<Option target="base"/>
+		</Unit>
+		<Unit filename="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/lib/node.o">
+			<Option target="base"/>
+		</Unit>
+		<Unit filename="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/lib/postfix.h">
+			<Option target="base"/>
+		</Unit>
+		<Unit filename="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/lib/postfix.html">
+			<Option target="base"/>
+		</Unit>
+		<Unit filename="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/lib/tabid.c">
+			<Option target="base"/>
+		</Unit>
+		<Unit filename="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/lib/tabid.h">
+			<Option target="base"/>
+		</Unit>
+		<Unit filename="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/lib/tabid.o">
+			<Option target="base"/>
+		</Unit>
+		<Unit filename="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/run/Makefile">
+			<Option target="base"/>
+		</Unit>
+		<Unit filename="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/run/dbl.asm">
+			<Option target="base"/>
+		</Unit>
+		<Unit filename="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/run/lib.asm">
+			<Option target="base"/>
+		</Unit>
+		<Unit filename="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/run/linux.asm">
+			<Option target="base"/>
+		</Unit>
+		<Unit filename="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/run/sys.asm">
+			<Option target="base"/>
+		</Unit>
+		<Unit filename="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/string.c">
+			<Option target="base"/>
+		</Unit>
+		<Unit filename="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/tests/test1.in">
+			<Option target="base"/>
+		</Unit>
+		<Unit filename="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/tests/test1.out">
+			<Option target="base"/>
+		</Unit>
+		<Unit filename="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/tests/test2.in">
+			<Option target="base"/>
+		</Unit>
+		<Unit filename="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/tests/test2.out">
+			<Option target="base"/>
+		</Unit>
+		<Unit filename="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/tests/test3.in">
+			<Option target="base"/>
+		</Unit>
+		<Unit filename="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/tests/test3.out">
+			<Option target="base"/>
+		</Unit>
+		<Unit filename="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/tests/test4.in">
+			<Option target="base"/>
+		</Unit>
+		<Unit filename="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/tests/test4.out">
+			<Option target="base"/>
+		</Unit>
+		<Unit filename="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/tests/test5.in">
+			<Option target="base"/>
+		</Unit>
+		<Unit filename="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/tests/test5.out">
+			<Option target="base"/>
+		</Unit>
+		<Unit filename="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/tests/test6.in">
+			<Option target="base"/>
+		</Unit>
+		<Unit filename="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/y.output">
+			<Option target="base"/>
+		</Unit>
+		<Unit filename="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/y.tab.c">
+			<Option target="base"/>
+		</Unit>
+		<Unit filename="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/y.tab.h">
+			<Option target="base"/>
+		</Unit>
+		<Unit filename="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/yyselect.c">
+			<Option target="base"/>
+		</Unit>
+		<Unit filename="/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+	</Project>
+</CodeBlocks_project_file>

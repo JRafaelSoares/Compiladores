@@ -1,0 +1,3 @@
+/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/cmake-build-debug/CMakeFiles/base.dir
+/home/jrsoares/Desktop/Comp/Compiladores/Proj1/base/cmake-build-debug/CMakeFiles/edit_cache.dir
