@@ -4,6 +4,7 @@
 #include <errno.h>
 #include "y.tab.h"
 #include <math.h>
+#include "node.h"
 
 int yyerror(char *s);
 int octal(char *s);

@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
+//#include "node.h"
+#include "tabid.h"
 extern int yylex();
 int yyerror(char *s);
 %}
@@ -23,41 +25,42 @@ int yyerror(char *s);
 
 
 %%
-file	:
+file	: decls
+	
+decls 	:  decls decl
+		|
+
+decl 	: public const tipo pointer ID init ';'
+
+public 	: PUBLIC
+		| 
+
+const 	: CONST
+		|
+
+tipo	: INTEGER
+		| STRING
+		| NUMBER
+		| VOID
+
+pointer : '*'
+		| 
+
+init 	: ASSIGN values
+		| '(' parametros ')'
+
+values	: INT
+		| const STR
+		| NUM
+		| ID
+
+parametros 	: parametros parametro
+		   	| 
+
+parametro 	: parametro ',' tipo pointer ID  
+			| tipo pointer ID 
 	;
 %%
-char *infile = "<<stdin>>";
-
-
-int yyerror(char *s) {
-	extern int yylineno;
-  	extern char *getyytext();
-  	fprintf(stderr, "%s: %s at or before '%s' in line %d\n", infile, s, getyytext(), yylineno);
-  	yynerrs++; return 1; }
-
-int main(int argc, char *argv[]) {
-	    extern YYSTYPE yylval;
-	    int tk;
-
-	    if (argc > 1) {
-    		extern FILE *yyin;
-    		if ((yyin = fopen(infile = argv[1], "r")) == NULL) {
-      			perror(argv[1]);
-      			return 1;
-    		}
-  		}
-
-	    while ((tk = yylex())) {
-		    if (tk > YYERRCODE){		    	
-			    printf("%d:\t%s\n", tk, yyname[tk]);
-		    }
-		    else{		    	
-			    printf("%d:\t%c\n", tk, tk);
-		    }
-		}
-	    
-	    return yynerrs;
-    }
 
 char **yynames =
 #if YYDEBUG > 0
