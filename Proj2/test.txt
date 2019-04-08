@@ -1,1 +1,4 @@
-integer i (integer ola , integer adeus)
+integer i (integer ola , integer adeus) {
+	integer kappa
+	if 9 then break;
+};

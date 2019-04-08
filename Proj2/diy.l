@@ -2,9 +2,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include "node.h"
 #include "y.tab.h"
 #include <math.h>
-#include "node.h"
+
 
 int yyerror(char *s);
 int octal(char *s);
