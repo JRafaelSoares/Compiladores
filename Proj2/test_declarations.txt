@@ -1,0 +1,123 @@
+integer *x := 1
+
+integer x := 2
+
+number y := 2.2
+const string y := "2"
+
+integer x := 2;
+const integer x := 2;
+public integer x := 2;
+public const integer x := 2;
+
+string x := "2";
+string * x := "2";
+number x := 2.2;
+number *x := 2.2;
+integer x := x;
+integer *x := x;
+
+public integer function(integer x){
+	
+};
+
+const integer function(integer x){
+	number x 
+	number y
+};
+
+integer function(integer x, number y){};
+
+integer function(integer* x){
+	1;
+
+	if ((++i > 2) & (i++ < 2))*2 then x := (2*n) + x
+	do{
+		if 1 then x:=&x
+		if ~1 then x:=-1
+	}
+	while y >= 4;
+
+	do{
+		
+	}
+	while 1;
+
+	x := function()
+	x := function(n)
+	x := function(n + 1)
+
+	if (a[i+1] <> 0 & b[i] <> 0) then x := (4 + 211)
+
+	if (x = 2) then x := (4 + 211)
+	if x[1] <> 20 then x++;
+	else x := y
+
+
+};
+
+void x(){};
+integer function(integer x, number *y){};
+
+integer function(number x){
+	do (x < 2)
+	while y >= 4
+
+	for i in x upto 10 do{
+		res := res + 1
+	}
+	for i in x downto 10 do{
+		if 1 then 1
+
+	}
+	for i in 2 downto x[0] step x[1] do{
+		break 1;
+		break;
+		continue;
+		continue 1;
+	}
+
+	i # 1
+};
+
+
+== without ;
+
+integer x := 2
+const integer x := 2
+public integer x := 2
+public const integer x := 2
+
+
+== errors
+=<
+integer 1 := 2;
+integer x := ;
+integer function(1){};
+integer function(x){};
+void x(,){}
+void x(,integer x){}
+integer function(integer* x){
+	if 1
+};
+integer function(number x){
+	do ()
+};
+integer function(number x){
+	while ()
+};
+integer function(number x){
+	{
+	break 1.1;
+	}
+};
+integer function(number x){
+	{
+	continue "1";
+	}
+};
+
+integer function(number x){
+	(x) := 21
+};
+=>

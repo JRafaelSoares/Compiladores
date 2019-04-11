@@ -1,4 +1,29 @@
-integer i (integer ola , integer adeus) {
-	integer kappa
-	if 9 then break;
+public void srand(integer i)
+public integer rand()
+public integer atoi(string s)
+public void printd(number n)
+
+public integer entry (integer argc, string *argv, string *envp) {
+	if argc > 1 then {
+		integer num := atoi(argv[1])
+		integer iterations := num
+		number result := 0.0
+		
+		do {
+			if iterations > 0 then{ 
+				integer random := rand()
+				result := result + random
+				srand(random)
+				iteration := iteration - 1
+			}
+
+		} while iteration > 0
+
+		if num > 0 then result := result / num
+
+		printd(result)
+
+		entry := 0
+	} else entry := 1
+	
 };
