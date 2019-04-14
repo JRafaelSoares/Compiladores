@@ -6,12 +6,6 @@
 #include "node.h"
 #include "tabid.h"
 extern int yylex();
-void existsID(Node* type, char* name);
-void checkID(Node *type, int idType);
-void checkStringDecl(Node *type);
-void checkIntNumDecl(Node* type, int value);
-void declareFunction(Node* type, char* name);
-void createFunction(Node* type, char* name);
 int checkString(Node* expr);
 int checkReal(Node* expr);
 int checkInt(Node* expr);
@@ -71,8 +65,8 @@ constr - 64
 %token FILES NIL DECLS DECL TYPE IDp VECT 
 %token INDIRECAO SIM MUL DIV RES ADD MIN LESSER GREATER EQ RES AND OR FUNC FACT 
 %token INIT PARAMS PARAM BODY INSTRUCAO INSTR ARGS ENDDECLS ENDINIT START INSTRUCAO BREAK CONTINUE ALLOCATE INSTRUCAOS NULLARGS NOSTEP
-%token FOR IN STEP INFO LOCALIZACAO ERROR VAR
-%type <n> decls decl tipo init values lvalue expressao parametros parametro param corpo instrucaos instrucao int arguments int step assign
+%token FOR IN STEP INFO LOCALIZACAO ERROR
+%type <n> decls decl functype tipo ids init values lvalue expressao parametros parametro param corpo instrucaos instrucao int arguments int step
 
 %%
 file		: decls 							{printNode(uniNode(FILES, $1),0,yynames);}
@@ -80,45 +74,27 @@ file		: decls 							{printNode(uniNode(FILES, $1),0,yynames);}
 decls 		: decls decl 						{$$ = binNode(DECLS, $1, $2);}
 			| 			 						{$$ = nilNode(ENDDECLS);}
 
-decl 		: PUBLIC assign ';' 				{$$ = binNode(DECL, nilNode(PUBLIC), $2);}
-			| assign ';' 						{$$ = uniNode(DECL, $1);}
+decl 		: PUBLIC CONST functype ids init ';' 	{$$ = binNode(DECL, nilNode(PUBLIC), binNode(INFO, binNode(TYPE, $3, $4), $5)); IDnew($3->value.i + 8 + ($4->attrib == IDp ? 16 : 0), $4->value.s, 0); checkDecl($3, $5);}
+			| PUBLIC functype ids init ';' 			{$$ = binNode(DECL, nilNode(PUBLIC), binNode(INFO, binNode(TYPE, $2, $3), $4)); IDnew($2->value.i + ($3->attrib == IDp ? 16 : 0), $3->value.s, 0); checkArgs($2, $4);}
+			| CONST functype ids init ';' 			{$$ = binNode(DECL, binNode(TYPE, $2, $3), $4); IDnew($2->value.i + 8 + ($3->attrib == IDp ? 16 : 0), $3->value.s, 0); checkDecl($2, $4);}
+			| functype ids init ';' 				{$$ = binNode(DECL, binNode(TYPE, $1, $2), $3); IDnew($1->value.i + ($2->attrib == IDp ? 16 : 0), $2->value.s, 0); checkArgs($1, $3);}
+			| error ';' 							{$$ = strNode(ERROR, "error");}
+			| error '}' 							{$$ = strNode(ERROR, "error");}
 
-			| PUBLIC tipo ID {declareFunction($2, $3);} init ';' 					{$$ = binNode(DECL, nilNode(PUBLIC), binNode(FUNC, binNode(TYPE, $2, strNode(ID, $3)), $5)); IDpop();}
-			| PUBLIC VOID ID {declareFunction(intNode(VOID, tVOID), $3);} init ';' 	{$$ = binNode(DECL, nilNode(PUBLIC), binNode(FUNC, binNode(TYPE, intNode(VOID, tVOID), strNode(ID, $3)), $5)); IDpop();}
-			| tipo ID {declareFunction($1, $2);} init ';'  							{$$ = binNode(DECL, binNode(TYPE, $1, strNode(ID, $2)), $4); IDpop();}
-			| VOID ID {declareFunction(intNode(VOID, tVOID), $2);} init ';' 		{$$ = binNode(DECL, binNode(TYPE, intNode(VOID, tVOID), strNode(ID, $2)), $4); IDpop();}
-			
-			| error ';' 						{$$ = strNode(ERROR, "error");}
-			| error '}' 						{$$ = strNode(ERROR, "error");}
-
-assign 		: CONST tipo ID ASSIGN INT 			{$$ = binNode(ASSIGN, binNode(TYPE, $2, strNode(ID, $3)), intNode(INT, $5)); IDnew($2->value.i + tCONSTL, $3, 0); checkIntNumDecl($2, $5);}
-			| CONST tipo ID ASSIGN '-' INT 		{$$ = binNode(ASSIGN, binNode(TYPE, $2, strNode(ID, $3)), intNode(INT, -$6)); IDnew($2->value.i + tCONSTL, $3, 0); checkIntNumDecl($2, $6);			}
-			| CONST tipo ID ASSIGN CONST STR 	{$$ = binNode(ASSIGN, binNode(TYPE, $2, strNode(ID, $3)), strNode(STR, $6)); IDnew($2->value.i + tCONSTL + tCONSTR, $3, 0); checkStringDecl($2);}
-			| CONST tipo ID ASSIGN STR 			{$$ = binNode(ASSIGN, binNode(TYPE, $2, strNode(ID, $3)), strNode(STR, $5)); IDnew($2->value.i + tCONSTL, $3, 0); checkStringDecl($2);}
-			| CONST tipo ID ASSIGN NUM 			{$$ = binNode(ASSIGN, binNode(TYPE, $2, strNode(ID, $3)), realNode(NUM, $5)); IDnew($2->value.i + tCONSTL, $3, 0); checkIntNumDecl($2, $5);}
-			| CONST tipo ID ASSIGN '-' NUM 		{$$ = binNode(ASSIGN, binNode(TYPE, $2, strNode(ID, $3)), realNode(NUM, -$6)); IDnew($2->value.i + tCONSTL, $3, 0); checkIntNumDecl($2, $6);}
-			| CONST tipo ID ASSIGN ID 			{$$ = binNode(ASSIGN, binNode(TYPE, $2, strNode(ID, $3)), strNode(ID,$5)); 		IDnew($2->value.i + tCONSTL, $3, 0); checkID($2, IDfind($5,0));}
-			| CONST tipo ID						{$$ = uniNode(VAR, binNode(TYPE, $2, strNode(ID, $3))); IDnew($2->value.i + tCONSTL, $3, 0);}
-			
-			| tipo ID ASSIGN INT 				{$$ = binNode(ASSIGN, binNode(TYPE, $1, strNode(ID, $2)), intNode(INT, $4));  IDnew($1->value.i, $2, 0); checkIntNumDecl($1, $4);}
-			| tipo ID ASSIGN '-' INT 			{$$ = binNode(ASSIGN, binNode(TYPE, $1, strNode(ID, $2)), intNode(INT, -$5)); IDnew($1->value.i, $2, 0); checkIntNumDecl($1, $5);}
-			| tipo ID ASSIGN CONST STR 			{$$ = binNode(ASSIGN, binNode(TYPE, $1, strNode(ID, $2)), strNode(STR, $5)); IDnew($1->value.i + tCONSTR, $2, 0); checkStringDecl($1);}
-			| tipo ID ASSIGN STR 				{$$ = binNode(ASSIGN, binNode(TYPE, $1, strNode(ID, $2)), strNode(STR, $4)); IDnew($1->value.i, $2, 0); checkStringDecl($1);}
-			| tipo ID ASSIGN NUM 				{$$ = binNode(ASSIGN, binNode(TYPE, $1, strNode(ID, $2)), realNode(NUM, $4)); IDnew($1->value.i, $2, 0); checkIntNumDecl($1, $4);}
-			| tipo ID ASSIGN '-' NUM 			{$$ = binNode(ASSIGN, binNode(TYPE, $1, strNode(ID, $2)), realNode(NUM, -$5)); IDnew($1->value.i, $2, 0); checkIntNumDecl($1, $5);}
-			| tipo ID ASSIGN ID 				{$$ = binNode(ASSIGN, binNode(TYPE, $1, strNode(ID, $2)), strNode(ID,$4)); 		IDnew($1->value.i, $2, 0); checkID($1, IDfind($4,0));}
-			| tipo ID							{$$ = uniNode(VAR, binNode(TYPE, $1, strNode(ID, $2))); IDnew($1->value.i, $2, 0);}
-
-init 		: '(' parametros ')' '{' corpo '}' 	{$$ = binNode(INIT, $2, $5);}
-			| '(' parametros ')' 				{$$ = uniNode(INIT, $2); }
-			| '(' ')' '{' corpo '}' 			{$$ = uniNode(INIT, $4); }
-			| '(' ')'							{$$ = nilNode(NIL); }
+init 		: ASSIGN INT 						{$$ = intNode(INT, $2); $$->info = tINTEGER;}
+			| ASSIGN CONST STR 					{$$ = strNode(STR, $3); $$->info = tSTRING;}
+			| ASSIGN STR 						{$$ = strNode(STR, $2); $$->info = tSTRING;}
+			| ASSIGN NUM 						{$$ = realNode(STR, $2); $$->info = tNUMBER;}
+			| ASSIGN ID 						{$$ = strNode(ID, $2); $$->info = IDfind($2, 0);}
+			| '(' parametros ')' '{' corpo '}' 	{$$ = binNode(INIT, $2, $5);}
+			| '(' parametros ')'				{$$ = uniNode(INIT, $2);}
+			| 									{$$ = nilNode(ENDINIT);}
 
 parametros 	: parametros parametro  			{$$ = binNode(PARAMS, $1, $2);}
-			| parametro 						{$$ = uniNode(PARAMS, $1); }
+		   	| 									{$$ = nilNode(NIL);}
 
-parametro 	: parametro ',' tipo ID 			{$$ = binNode(PARAM, $1, binNode(TYPE, $3, strNode(ID, $4))); existsID($3, $4);}
-			| tipo ID 							{$$ = binNode(TYPE, $1, strNode(ID, $2)); existsID($1, $2);}
+parametro 	: parametro ',' tipo ids 			{$$ = binNode(PARAM, $1, binNode(TYPE, $3, $4));}
+			| tipo ids 							{$$ = binNode(TYPE, $1, $2);}
 
 corpo 		: param instrucaos 					{$$ = binNode(BODY, $1, $2);}
 			| param 							{$$ = uniNode(BODY, $1);}
@@ -128,12 +104,15 @@ corpo 		: param instrucaos 					{$$ = binNode(BODY, $1, $2);}
 param 		: param parametro ';' 				{$$ = binNode(PARAM, $1, $2);}			
 			| parametro ';' 					{$$ = uniNode(PARAM, $1);}
 
-tipo		: INTEGER 							{$$ = intNode(INTEGER, tINTEGER);}
-			| STRING 							{$$ = intNode(STRING, tSTRING);}
-			| NUMBER 							{$$ = intNode(NUMBER, tNUMBER);}
-			| INTEGER '*' 						{$$ = intNode(INTEGER, tINTEGER + tPOINTER);}
-			| STRING '*' 						{$$ = intNode(STRING, tSTRING + tPOINTER);}
-			| NUMBER '*'						{$$ = intNode(STRING, tSTRING + tPOINTER);}
+tipo		: INTEGER 							{$$ = intNode(INTEGER, 1);}
+			| STRING 							{$$ = intNode(STRING, 2);}
+			| NUMBER 							{$$ = intNode(NUMBER, 3);}	
+
+ids			: ID 								{$$ = strNode(ID, $1);}
+			| '*' ID 							{$$ = strNode(IDp, $2);}
+
+functype	: tipo 								{$$ = $1;}
+			| VOID 								{$$ = intNode(VOID, 4);}
 
 lvalue		: ID 								{$$ = strNode(ID,$1); $$->info = IDfind($1, 0);}
 			| ID '[' expressao ']'				{$$ = binNode(VECT, strNode(ID, $1), $3); $$->info = IDfind($1, 0);}
@@ -205,29 +184,6 @@ arguments	: arguments ',' expressao 							{$$ = binNode(ARGS, $1, $3);}
 
 	;
 %%
-
-void existsID(Node* type, char* name){
-	if(IDnew(type->value.i, name, 0) != 1){
-		yyerror("Variable already exists");
-	}
-}
-
-//function checks
-void createFunction(Node* type, char* name){
-	IDnew(tFUNCT, name, 0);
-	IDpush();
-	IDnew(type->value.i, name, 0);
-}
-
-void declareFunction(Node* type, char* name){
-	if(IDnew(tFUNCT + type->value.i, name, 0) == 1) {
-		IDpush();
-		IDnew(type->value.i, name, 0);
-	}
-	
-}
-
-// checks for expressions
 int checkIntReal(Node* first, Node* second){
 	return (checkInt(first)||checkReal(first)) && (checkInt(second)||checkReal(second));
 
@@ -253,43 +209,6 @@ int checkString(Node* expr){
 	return 1;
 }
 
-//Declaration checks
-void checkIntNumDecl(Node* type, int value){
-	if(!value){
-		return;
-	}
-	if(type->attrib == INTEGER || type->attrib == NUMBER){
-		return;
-	}
-	yyerror("Invalid type for an integer");
-}
-
-void checkStringDecl(Node *type){
-	if(type->attrib == STRING || type->value.i == tINTEGER + tPOINTER){
-		return;
-	}
-	yyerror("Invalid type for a string");
-}
-
-void checkID(Node *type, int idType){
-	printf("Type of first: %d, Type of second: %d\n\n", type->value.i, idType);
-	if(type->value.i == idType){
-		return;
-	}
-
-	int id = idType % 4;
-
-	if((type->attrib == INTEGER || type ->attrib == NUMBER) && (id == 1 || id == 3)){
-		return;
-	}
-
-	if(type->value.i == tINTEGER + tPOINTER && id == 2){
-		return;
-	}
-
-	yyerror("ID types do not match");
-}
-
 void checkDecl(Node* type, Node* init){
 	//Checks arguments type and if its a declaration of a variable or a function
 	(init->attrib == INIT ? yyerror("Function declarations cannot be constant") : 1);
@@ -305,7 +224,6 @@ void checkArgs(Node* type, Node* init){
 		yyerror("Types do no match");
 	}
 }
-
 
 char **yynames =
 #if YYDEBUG > 0
