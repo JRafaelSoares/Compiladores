@@ -6,12 +6,13 @@
 #include "node.h"
 #include "tabid.h"
 extern int yylex();
+void setFunctionParameters(Node* params);
+struct Args* getParameters(Node* params);
 void existsID(Node* type, char* name);
 void checkID(Node *type, int idType);
 void checkStringDecl(Node *type);
 void checkIntNumDecl(Node* type, int value);
 void declareFunction(Node* type, char* name);
-void createFunction(Node* type, char* name);
 int checkString(Node* expr);
 int checkReal(Node* expr);
 int checkInt(Node* expr);
@@ -39,6 +40,14 @@ pointer - 16
 funct - 32
 constr - 64
 */
+
+int funcType = 0;
+char* funcName = 0;
+void* backupRoot = 0;
+
+struct Args { int type; struct Args *next; };
+void printStruct(struct Args* asd);
+
 %}
 
 %union {
@@ -72,7 +81,7 @@ constr - 64
 %token INDIRECAO SIM MUL DIV RES ADD MIN LESSER GREATER EQ RES AND OR FUNC FACT 
 %token INIT PARAMS PARAM BODY INSTRUCAO INSTR ARGS ENDDECLS ENDINIT START INSTRUCAO BREAK CONTINUE ALLOCATE INSTRUCAOS NULLARGS NOSTEP
 %token FOR IN STEP INFO LOCALIZACAO ERROR VAR
-%type <n> decls decl tipo init values lvalue expressao parametros parametro param corpo instrucaos instrucao int arguments int step assign
+%type <n> decls decl tipo init values lvalue expressao parametro param corpo instrucaos instrucao int arguments int step assign
 
 %%
 file		: decls 							{printNode(uniNode(FILES, $1),0,yynames);}
@@ -109,15 +118,12 @@ assign 		: CONST tipo ID ASSIGN INT 			{$$ = binNode(ASSIGN, binNode(TYPE, $2, s
 			| tipo ID ASSIGN ID 				{$$ = binNode(ASSIGN, binNode(TYPE, $1, strNode(ID, $2)), strNode(ID,$4)); 		IDnew($1->value.i, $2, 0); checkID($1, IDfind($4,0));}
 			| tipo ID							{$$ = uniNode(VAR, binNode(TYPE, $1, strNode(ID, $2))); IDnew($1->value.i, $2, 0);}
 
-init 		: '(' parametros ')' '{' corpo '}' 	{$$ = binNode(INIT, $2, $5);}
-			| '(' parametros ')' 				{$$ = uniNode(INIT, $2); }
-			| '(' ')' '{' corpo '}' 			{$$ = uniNode(INIT, $4); }
-			| '(' ')'							{$$ = nilNode(NIL); }
+init 		: '(' parametro ')' '{' {setFunctionParameters($2);} corpo '}' 	{$$ = binNode(INIT, $2, $6); IDpop();}
+			| '(' parametro ')' 				{$$ = uniNode(INIT, $2); setFunctionParameters($2); IDpop();}
+			| '(' ')' '{' corpo '}' 			{$$ = uniNode(INIT, $4); IDpop();}
+			| '(' ')'							{$$ = nilNode(NIL); IDpop();}
 
-parametros 	: parametros parametro  			{$$ = binNode(PARAMS, $1, $2);}
-			| parametro 						{$$ = uniNode(PARAMS, $1); }
-
-parametro 	: parametro ',' tipo ID 			{$$ = binNode(PARAM, $1, binNode(TYPE, $3, strNode(ID, $4))); existsID($3, $4);}
+parametro 	: parametro ',' tipo ID 			{$$ = binNode(PARAM, binNode(TYPE, $3, strNode(ID, $4)), $1); existsID($3, $4);}
 			| tipo ID 							{$$ = binNode(TYPE, $1, strNode(ID, $2)); existsID($1, $2);}
 
 corpo 		: param instrucaos 					{$$ = binNode(BODY, $1, $2);}
@@ -206,20 +212,61 @@ arguments	: arguments ',' expressao 							{$$ = binNode(ARGS, $1, $3);}
 	;
 %%
 
+void printStruct(struct Args* asd){
+
+	struct Args* aux = asd;
+
+	while(aux != 0){
+		printf("%d ", aux->type);
+		aux = aux->next;
+	}
+	printf("\n");
+}
+
+void setFunctionParameters(Node* params){
+	void* actualRoot = IDroot(backupRoot);
+
+	struct Args* argument = getParameters(params);
+
+	IDreplace(funcType, funcName, (long)argument);
+
+	IDroot(actualRoot);
+
+	printStruct(argument);
+}
+struct Args* getParameters(Node* params){
+
+	struct Args *aux = (struct Args*)malloc(sizeof(struct Args));
+
+	if(RIGHT_CHILD(params) != 0){
+		aux->next = getParameters(RIGHT_CHILD(params));
+	}
+
+	if(LEFT_CHILD(params) != 0){
+		aux->type = getParameters(LEFT_CHILD(params))->type;
+	}
+
+	if(aux->next != 0){
+		aux->type = params->value.i;
+		aux->next = 0;
+	}
+
+	return aux; 
+}
+
+
 void existsID(Node* type, char* name){
 	if(IDnew(type->value.i, name, 0) != 1){
 		yyerror("Variable already exists");
 	}
 }
 
-//function checks
-void createFunction(Node* type, char* name){
-	IDnew(tFUNCT, name, 0);
-	IDpush();
-	IDnew(type->value.i, name, 0);
-}
-
 void declareFunction(Node* type, char* name){
+	funcType = type->value.i;
+	funcName = name;
+	backupRoot = IDroot(0);
+	IDroot(backupRoot);
+
 	if(IDnew(tFUNCT + type->value.i, name, 0) == 1) {
 		IDpush();
 		IDnew(type->value.i, name, 0);
