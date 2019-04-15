@@ -14,7 +14,7 @@ $(LANG): $(YACC).y $(LANG).l $(LANG).brg
 	byacc -dv $(YACC).y
 	flex -l $(LANG).l
 	pburg -T $(LANG).brg
-	$(LINK.c) -o $(LANG) $(ARCH) -I$(LIB) lex.yy.c y.tab.c yyselect.c -L$(LIB) -l$(UTIL)
+	$(LINK.c) -o $(LANG) $(ARCH) -I$(LIB) lex.yy.c y.tab.c -L$(LIB) -l$(UTIL)
 
 examples:: $(LANG)
 	make -C $(EXS)
