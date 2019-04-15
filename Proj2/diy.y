@@ -6,6 +6,7 @@
 #include "node.h"
 #include "tabid.h"
 extern int yylex();
+extern int errors;
 
 int checkRightConst(Node* expr);
 int checkLogics(Node* expr1, Node* expr2, char* errorMessage);
@@ -28,7 +29,7 @@ void checkID(Node *type, int idType);
 void checkStringDecl(Node *type);
 void checkIntDecl(Node* type, int value);
 void checkNumDecl(Node* type, int value);
-void declareFunction(Node* typeFunc, char* name, Node* params);
+void declareFunction(Node* typeFunc, char* name, Node* params, int isBody);
 int checkString(Node* expr);
 int checkReal(Node* expr);
 int checkInt(Node* expr);
@@ -37,7 +38,7 @@ void checkDecl(Node* type, Node* init);
 void checkArgs(Node* type, Node* init);
 int yyerror(char *s);
 
-struct Args { int type; char* name; struct Args *next; };
+struct Args { int type; char* name; int declared; struct Args *next; };
 
 void printStruct(struct Args* asd);
 
@@ -100,7 +101,7 @@ int level = 0;
 %type <n> decls decl tipo init values lvalue expressao parametro param corpo instrucaos instrucao int arguments step assign
 
 %%
-file		: decls 							{printNode(uniNode(FILES, $1),0,yynames);}
+file		: decls 							{if(errors == 0){printNode(uniNode(FILES, $1),0,yynames);}}
 	
 decls 		: decls decl 						{$$ = binNode(DECLS, $1, $2);}
 			| 			 						{$$ = nilNode(ENDDECLS);}
@@ -130,15 +131,15 @@ assign 		: CONST tipo ID ASSIGN INT 			{$$ = binNode(ASSIGN, binNode(TYPE, $2, s
 			| tipo ID ASSIGN ID 				{$$ = binNode(ASSIGN, binNode(TYPE, $1, strNode(ID, $2)), strNode(ID,$4)); 		IDnew($1->value.i, $2, 0); checkID($1, IDfind($4,0));}
 			| tipo ID							{$$ = uniNode(VAR, binNode(TYPE, $1, strNode(ID, $2))); IDnew($1->value.i, $2, 0);}
 
-init 		: tipo ID '(' parametro ')' '{' {declareFunction($1, $2, $4);} corpo '}' 	{$$ = binNode(FUNC, binNode(TYPE, $1, strNode(ID, $2)), binNode(INIT, $4, $8)); IDpop();}
-			| tipo ID '(' parametro ')' 				{$$ = binNode(FUNC, binNode(TYPE, $1, strNode(ID, $2)), uniNode(INIT, $4)); declareFunction($1, $2, $4); IDpop();}
-			| VOID ID '(' parametro ')' '{' {declareFunction(intNode(VOID, tVOID), $2, $4);} corpo '}' 	{$$ = binNode(FUNC, binNode(TYPE, intNode(VOID, tVOID), strNode(ID, $2)), binNode(INIT, $4, $8)); IDpop();}
-			| VOID ID '(' parametro ')'				{$$ = binNode(FUNC, binNode(TYPE, intNode(VOID, tVOID), strNode(ID, $2)), uniNode(INIT, $4)); declareFunction(intNode(VOID, tVOID), $2, $4); IDpop();}
+init 		: tipo ID '(' parametro ')' '{' {declareFunction($1, $2, $4, 1);} corpo '}' 	{$$ = binNode(FUNC, binNode(TYPE, $1, strNode(ID, $2)), binNode(INIT, $4, $8)); IDpop();}
+			| tipo ID '(' parametro ')' 				{$$ = binNode(FUNC, binNode(TYPE, $1, strNode(ID, $2)), uniNode(INIT, $4)); declareFunction($1, $2, $4, 0); IDpop();}
+			| VOID ID '(' parametro ')' '{' {declareFunction(intNode(VOID, tVOID), $2, $4, 1);} corpo '}' 	{$$ = binNode(FUNC, binNode(TYPE, intNode(VOID, tVOID), strNode(ID, $2)), binNode(INIT, $4, $8)); IDpop();}
+			| VOID ID '(' parametro ')'				{$$ = binNode(FUNC, binNode(TYPE, intNode(VOID, tVOID), strNode(ID, $2)), uniNode(INIT, $4)); declareFunction(intNode(VOID, tVOID), $2, $4, 0); IDpop();}
 			
-			| tipo ID '(' ')' '{' {declareFunction($1, $2, 0);} corpo '}' 	{$$ = uniNode(FUNC, binNode(TYPE, $1, strNode(ID, $2))); IDpop();}
-			| tipo ID '(' ')'					{$$ = uniNode(FUNC, binNode(TYPE, $1, strNode(ID, $2))); declareFunction($1, $2, 0); IDpop();}
-			| VOID ID '(' ')' '{' {declareFunction(intNode(VOID, tVOID), $2, 0);} corpo '}' 	{$$ = uniNode(FUNC, binNode(TYPE, intNode(VOID, tVOID), strNode(ID, $2))); IDpop();}
-			| VOID ID '(' ')'					{$$ = uniNode(FUNC, binNode(TYPE, intNode(VOID, tVOID), strNode(ID, $2))); declareFunction(intNode(VOID, tVOID), $2, 0); IDpop();}
+			| tipo ID '(' ')' '{' {declareFunction($1, $2, 0, 1);} corpo '}' 	{$$ = uniNode(FUNC, binNode(TYPE, $1, strNode(ID, $2))); IDpop();}
+			| tipo ID '(' ')'					{$$ = uniNode(FUNC, binNode(TYPE, $1, strNode(ID, $2))); declareFunction($1, $2, 0, 0); IDpop();}
+			| VOID ID '(' ')' '{' {declareFunction(intNode(VOID, tVOID), $2, 0, 1);} corpo '}' 	{$$ = uniNode(FUNC, binNode(TYPE, intNode(VOID, tVOID), strNode(ID, $2))); IDpop();}
+			| VOID ID '(' ')'					{$$ = uniNode(FUNC, binNode(TYPE, intNode(VOID, tVOID), strNode(ID, $2))); declareFunction(intNode(VOID, tVOID), $2, 0, 0); IDpop();}
 
 parametro 	: parametro ',' tipo ID 			{$$ = binNode(PARAM, binNode(TYPE, $3, strNode(ID, $4)), $1);}
 			| tipo ID 							{$$ = binNode(TYPE, $1, strNode(ID, $2));}
@@ -267,6 +268,19 @@ struct Args* getParameters(Node* params){
 	return aux; 
 }
 
+int compareStructs(struct Args* s1, struct Args* s2){
+	while(s1 != 0 && s2 != 0){
+		if(s1->type != s2->type){
+			return 0;
+		}
+		s1 = s1->next;
+		s2 = s2->next;
+	}
+	if(s1 != s2){
+		return 0;
+	}
+	return 1;
+}
 
 void existsID(Node* type, char* name){
 	if(IDnew(type->value.i, name, 0) != 1){
@@ -318,17 +332,29 @@ int checkAssign(Node* leftValue, Node* expr){
 
 }
 
-void declareFunction(Node* typeFunc, char* name, Node* params){
+void declareFunction(Node* typeFunc, char* name, Node* params, int isBody){
 
-	struct Args* arg = 0;
+	struct Args* arg = (struct Args*)malloc(sizeof(struct Args));
 
+	arg->type= 0;
+	arg->name= 0;
+	arg->next= 0;
+	
 	if(params != 0){
 		arg = getParameters(params);
 	}
 
-	if(IDnew(tFUNCT + typeFunc->value.i, name, (long)arg) == 1) {
+	long aux;
+	if(IDfind(name, (long*)IDtest) == -1) {
+		
+		if(isBody){ arg->declared = 1;}
+
+		if(!isBody && arg != 0){ arg->declared = 0;}
+
+		IDnew(tFUNCT + typeFunc->value.i, name, (long)arg);
 		IDpush();
-		IDnew(typeFunc->value.i, name, 0);
+		
+		if(typeFunc->value.i % tVOID != 0){IDnew(typeFunc->value.i, name, 0);}
 		
 		if(params != 0){
 			struct Args* aux = arg;
@@ -340,6 +366,35 @@ void declareFunction(Node* typeFunc, char* name, Node* params){
 			IDnew(aux->type, aux->name, 0);
 		}
 	}
+	else{	
+		IDsearch(name, (long*)&aux, 1, 0);	
+		struct Args* oldAux = (struct Args*)aux;
+
+		if(!compareStructs(oldAux, arg)){
+			yyerror("Incompatible types for already declared function");
+		};
+
+		if(!oldAux || !arg){ return;}
+		if(isBody && oldAux->declared){yyerror("Function has already been initialized with a body");}
+		
+		if(isBody){oldAux->declared = 1;}
+
+		IDpush();
+		if(typeFunc->value.i % tVOID != 0){IDnew(typeFunc->value.i, name, 0);}
+
+		if(params != 0){
+			
+
+			struct Args* newArgs = arg;
+			while(newArgs->next != 0){
+				IDnew(newArgs->type, newArgs->name, 0);
+				newArgs = newArgs->next;
+			}
+			IDnew(newArgs->type, newArgs->name, 0);
+		}
+
+	}
+	
 }
 
 int checkRightConst(Node* expr){
