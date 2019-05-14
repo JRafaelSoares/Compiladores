@@ -1,0 +1,4 @@
+Comp TODO:
+
+Adicionar função para alocar funções:
+	Adicionar pos para saber quanto no enter

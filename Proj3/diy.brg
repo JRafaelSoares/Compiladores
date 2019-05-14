@@ -16,6 +16,12 @@ char *mklbl(int n) {
   sprintf(buf, "_i%d", n);
   return strcpy(malloc(strlen(buf)+1),buf);
 }
+static char *mkfunc(char *s) {
+  static char buf[80];
+  strcpy(buf, "_");
+  strcat(buf, s);
+  return buf;
+}
 static void outstr(char *s) {
   while (*s) fprintf(outfp, pfCHAR, (unsigned char)*s++);
   fprintf(outfp, pfCHAR, 0);
@@ -26,33 +32,45 @@ static int extcnt;
 
 %}
 %include "y.tab.h"
+%term FUNC='(' ARGS=',' BLOCK='{' END=';'
 %%
+
+finit: FUNC(params, blocop)   
+
+params: ARGS(params, param)   
+
+param: PARAM(tipo, ID)   
+
+blocop: 0
+
 %%
-/*
 void variable(char *name, Node *type, Node *init)
 {
   int i = 0, siz = 1;
   fprintf(outfp, pfGLOBL pfDATA pfALIGN pfLABEL, name, pfOBJ, name);
-  //Checks the type of variable to alloc space
+
   switch(type->CHILD(i)->attrib){
-  	case INTEGER: fprintf(outfp, pfWORD pfALLOC); break;
-  	case STRING: fprintf(outfp, pfWORD pfALLOC); break;
-  	case NUMBER: fprintf(outfp, pfWORD*2 pfALLOC); break;
+  	case INTEGER: fprintf(outfp, pfIMM pfALLOC, pfWORD); break;
+  	case STRING: fprintf(outfp, pfIMM pfALLOC, pfWORD); break;
+  	case NUMBER: fprintf(outfp, pfIMM pfALLOC, pfWORD); break;
   }
-  //Checks if variable is initialized and gives its value
+
   if (init) {
   	switch (init->CHILD(i)->attrib) {
-    	case INT: fprintf(outfp, pfINTEGER, init->CHILD(i)->value.i); break;
-	    case ID: fprintf(outfp, pfID, init->CHILD(i)->value.s); break;
-        case REAL: fprintf(outfp, pfDOUBLE, init->CHILD(i))
-        case STR: { char *l = mklbl(++lbl);
-			fprintf(outfp, pfRODATA pfALIGN pfLABEL, l);
-			outstr(init->CHILD(i)->value.s);
-			fprintf(outfp, pfDATA pfID, l); break; }
+      case INT:   fprintf(outfp, pfINTEGER, init->CHILD(i)->value.i); break;
+	    case ID:    fprintf(outfp, pfID, init->CHILD(i)->value.s); break;
+      case REAL:  fprintf(outfp, pfDOUBLE, init->CHILD(i)->value.r); break;
+      case STR: { char *l = mklbl(++lbl);
+			            fprintf(outfp, pfRODATA pfALIGN pfLABEL, l);
+			            outstr(init->CHILD(i)->value.s);
+			            fprintf(outfp, pfDATA pfID, l); break; 
+                }
     }
   }
+  /*
   for (i = 0; i < extcnt; i++)
     if (extrns[i] && strcmp(extrns[i], name) == 0) extrns[i] = 0;
+    */
 }
 
 void defFunction(char *name, int enter, Node *stmt)
@@ -65,9 +83,13 @@ void defFunction(char *name, int enter, Node *stmt)
   fflush(stdout);
   fprintf(outfp, pfTEXT pfALIGN pfGLOBL pfLABEL pfENTER, mkfunc(name), pfFUNC, mkfunc(name), enter * (pfWORD/4));
   yyselect(stmt);
-  fprintf(outfp, pfLEAVE pfRET); /* just in case ... 
+  fprintf(outfp, pfLEAVE pfRET); // just in case ... 
   freeNode(stmt);
+
+  /*
   for (i = 0; i < extcnt; i++)
     if (extrns[i] && strcmp(extrns[i], mkfunc(name)) == 0) extrns[i] = 0;
+  */
 }
-*/
+
+

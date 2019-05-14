@@ -8,7 +8,8 @@
 #include "tabid.h"
 
 extern int yylex();
-void variable(char *, Node *, Node *), defFunction(char *, int, Node *);
+
+extern void variable(char *, Node *, Node *), defFunction(char *, int, Node *);
 
 void yyerror(char *s);
 void declare(int pub, int cnst, Node *type, char *name, Node *value);
@@ -19,6 +20,8 @@ int intonly(Node *arg, int);
 int noassign(Node *arg1, Node *arg2);
 static int ncicl;
 static char *fpar;
+
+static int pos = 4;
 %}
 
 %union {
@@ -47,33 +50,33 @@ static char *fpar;
 %nonassoc UMINUS '!' NOT REF
 %nonassoc '[' '('
 
-%type <n> tipo init finit blocop params
-%type <n> bloco decls param base stmt step args list end brk lv expr
+%type <n> tipo init finit blocop params 
+%type <n> bloco decls param base stmt step args list end brk lv expr decl
 %type <i> ptr intp public
 
 %token LOCAL POSINC POSDEC PTR CALL START PARAM NIL
 %%
 file	:
-	| file error ';'
-	| file public tipo ID ';'	{ IDnew($3->value.i, $4, 0); declare($2, 0, $3, $4, 0); }
-	| file public CONST tipo ID ';'	{ IDnew($4->value.i+5, $5, 0); declare($2, 1, $4, $5, 0); }
-	| file public tipo ID init	{ IDnew($3->value.i, $4, 0); declare($2, 0, $3, $4, $5); }
-	| file public CONST tipo ID init	{ IDnew($4->value.i+5, $5, 0); declare($2, 1, $4, $5, $6); }
-	| file public tipo ID { enter($2, $3->value.i, $4); } finit { function($2, $3, $4, $6); }
-	| file public VOID ID { enter($2, 4, $4); } finit { function($2, intNode(VOID, 4), $4, $6); }
-	;
+		| file error ';'
+		| file public tipo ID ';'			{ IDnew($3->value.i, $4, 0); 	declare($2, 0, $3, $4, 0); }
+		| file public CONST tipo ID ';'		{ IDnew($4->value.i+5, $5, 0); 	declare($2, 1, $4, $5, 0); }
+		| file public tipo ID init			{ IDnew($3->value.i, $4, 0); 	declare($2, 0, $3, $4, $5); }
+		| file public CONST tipo ID init	{ IDnew($4->value.i+5, $5, 0); 	declare($2, 1, $4, $5, $6); }
+		| file public tipo ID { enter($2, $3->value.i, $4);} finit { function($2, $3, $4, $6); }
+		| file public VOID ID { enter($2, 4, $4);} finit { function($2, intNode(VOID, 4), $4, $6); }
+		;
 
 public	:               { $$ = 0; }
-	| PUBLIC        { $$ = 1; }
-	;
+		| PUBLIC        { $$ = 1; }
+		;
 
 ptr	:               { $$ = 0; }
 	| '*'           { $$ = 10; }
 	;
 
-tipo	: INTEGER ptr	{ $$ = intNode(INTEGER, 1+$2); }
-		| STRING ptr	{ $$ = intNode(STRING, 2+$2); }
-		| NUMBER ptr	{ $$ = intNode(NUMBER, 3+$2); }
+tipo	: INTEGER ptr	{ $$ = intNode(INTEGER, 1+$2); $$->info = 4;}
+		| STRING ptr	{ $$ = intNode(STRING, 2+$2); $$->info = 4;}
+		| NUMBER ptr	{ $$ = intNode(NUMBER, 3+$2); $$->info = 8;}
 		;
 
 init	: ATR ID ';'		{ $$ = strNode(ID, $2); $$->info = IDfind($2, 0) + 10; }
@@ -82,11 +85,11 @@ init	: ATR ID ';'		{ $$ = strNode(ID, $2); $$->info = IDfind($2, 0) + 10; }
 		| ATR STR ';'		{ $$ = strNode(STR, $2); $$->info = 2; }
 		| ATR CONST STR ';'	{ $$ = strNode(CONST, $3); $$->info = 2+5; }
 		| ATR REAL ';'		{ $$ = realNode(REAL, $2); $$->info = 3; }
-		| ATR '-' REAL ';'	{ $$ = realNode(REAL, -$3); $$->info = 3; }
+		| ATR '-' REAL ';'	{ $$ = realNode(REAL, -$3); $$	->info = 3; }
         ;
 
-finit   : '(' params ')' blocop { $$ = binNode('(', $4, $2); }
-		| '(' ')' blocop        { $$ = binNode('(', $3, 0); }
+finit   : '(' params {pos = 0;} ')' blocop { $$ = binNode('(', $5, $2); }
+		| '(' {pos = 0;} ')' blocop        { $$ = binNode('(', $4, 0); }
 		;
 
 blocop  : ';'   { $$ = 0; }
@@ -97,16 +100,21 @@ params	: param
 		| params ',' param      { $$ = binNode(',', $1, $3); }
 		;
 
-bloco	: '{' { IDpush(); } decls list end '}'    { $$ = binNode('{', $5 ? binNode(';', $4, $5) : $4, $3); IDpop(); }
+param	: tipo ID               { $$ = binNode(PARAM, $1, strNode(ID, $2));
+                                  IDnew($1->value.i, $2, pos); pos += $1->info;
+                                  if (IDlevel() == 1) fpar[++fpar[0]] = $1->value.i;
+                                }
+		;
+
+bloco	: '{' { IDpush(); } decls list end '}'    { $$ = binNode('{', $5 ? binNode(';', $4, $5) : $4, $3); IDpop(); pos = 4;}
 		;
 
 decls	:                       { $$ = 0; }
-		| decls param ';'       { $$ = binNode(';', $1, $2); }
+		| decls decl ';'       { $$ = binNode(';', $1, $2); }
 		;
 
-param	: tipo ID               { $$ = binNode(PARAM, $1, strNode(ID, $2));
-                                  IDnew($1->value.i, $2, 0);
-                                  if (IDlevel() == 1) fpar[++fpar[0]] = $1->value.i;
+decl	: tipo ID               { $$ = binNode(PARAM, $1, strNode(ID, $2));
+                                  IDnew($1->value.i, $2, pos); pos -= $1->info;
                                 }
 		;
 
@@ -310,4 +318,6 @@ void function(int pub, Node *type, char *name, Node *body)
 		if (fwd > 40) yyerror("duplicate function");
 		else IDreplace(fwd+40, name, par);
 	}
+
+	defFunction(name, -pos, body);
 }

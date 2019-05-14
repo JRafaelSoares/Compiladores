@@ -411,7 +411,7 @@ static char *pfNAMES[] = { 0, "comm", "nop", "imm", "add", "sub", "mul", "div",
 #define pfARG2D	"@ ARG2D\n\tldr\tr0, [sp,#8]\n\tldr\tr1, [sp,#12]\n"
 
 #elif defined(pfAMD64)
-#define pfWORD 4 /*Changed to 4 bytes/32 bits*/
+#define pfWORD 4 
 
 #define pfCOMM "; COMM %s\n"
 #define pfNOP "; NOP\n\tnop\n"
