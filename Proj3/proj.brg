@@ -1,0 +1,75 @@
+%{
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "node.h"
+#include "tabid.h"
+#include "y.tab.h"
+#include "postfix.h"
+
+extern FILE *outfp;
+char *dupstr(const char *s);
+
+int lbl;
+char *mklbl(int n) {
+  static char buf[20];
+  sprintf(buf, "_i%d", n);
+  return strcpy(malloc(strlen(buf)+1),buf);
+}
+static void outstr(char *s) {
+  while (*s) fprintf(outfp, pfCHAR, (unsigned char)*s++);
+  fprintf(outfp, pfCHAR, 0);
+}
+
+static char *extrns[100]; /* emit externs at the end only */
+static int extcnt;
+
+%}
+%include "y.tab.h"
+%%
+%%
+void variable(char *name, Node *type, Node *init)
+{
+  int i = 0, siz = 1;
+  fprintf(outfp, pfGLOBL pfDATA pfALIGN pfLABEL, name, pfOBJ, name);
+  //if (vc->type == nodeInt) siz = vc->value.i;
+  switch(type->CHILD(i)->attrib){
+  	case INTEGER: fprintf(outfp, pfWORD pfALLOC); break;
+  	case STRING: fprintf(outfp, pfWORD pfALLOC); break;
+  	case NUMBER: fprintf(outfp, pfWORD*2 pfALLOC); break;
+  }
+
+  if (init) {
+  	switch (init->CHILD(i)->attrib) {
+    	case INT: fprintf(outfp, pfINTEGER, init->CHILD(i)->value.i); break;
+	    case ID: fprintf(outfp, pfID, init->CHILD(i)->value.s); break;
+        case REAL: fprintf(outfp, pfDOUBLE, init->CHILD(i))
+        case STR: { char *l = mklbl(++lbl);
+			fprintf(outfp, pfRODATA pfALIGN pfLABEL, l);
+			outstr(init->CHILD(i)->value.s);
+			fprintf(outfp, pfDATA pfID, l); break; }
+    }
+    //if (i < siz)  fprintf(outfp, pfBYTE, pfWORD * (siz - i));
+  }
+  //else fprintf(outfp, pfBYTE, pfWORD * siz);
+  /*
+  for (i = 0; i < extcnt; i++)
+    if (extrns[i] && strcmp(extrns[i], name) == 0) extrns[i] = 0;
+    */
+}
+
+void defFunction(char *name, int enter, Node *stmt)
+{
+  int i;
+  extern int errors, trace;
+  extern char **yynames;
+  if (errors) return;
+  if (trace) printNode(stmt, 0, yynames);
+  fflush(stdout);
+  fprintf(outfp, pfTEXT pfALIGN pfGLOBL pfLABEL pfENTER, mkfunc(name), pfFUNC, mkfunc(name), enter * (pfWORD/4));
+  yyselect(stmt);
+  fprintf(outfp, pfLEAVE pfRET); /* just in case ... */
+  freeNode(stmt);
+  for (i = 0; i < extcnt; i++)
+    if (extrns[i] && strcmp(extrns[i], mkfunc(name)) == 0) extrns[i] = 0;
+}
