@@ -41,8 +41,9 @@ params: ARGS(params, param)
 
 param: PARAM(tipo, ID)   
 
-blocop: 0
+tipo: NIL
 
+blocop: NIL
 %%
 void variable(char *name, Node *type, Node *init)
 {
