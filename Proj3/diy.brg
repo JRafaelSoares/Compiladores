@@ -10,6 +10,9 @@
 extern FILE *outfp;
 char *dupstr(const char *s);
 
+static char *extrns[100]; /* emit externs at the end only */
+static int extcnt;
+
 int lbl;
 char *mklbl(int n) {
   static char buf[20];
@@ -35,16 +38,39 @@ static int extcnt;
 %term FUNC='(' ARGS=',' BLOCK='{' END=';'
 %%
 
-finit: FUNC(params, blocop)   
+finit: FUNC(bloco)
 
-params: ARGS(params, param)   
+bloco: BLOCK(list)
 
-param: PARAM(tipo, ID)   
+list: END(list, base)
+list: base
 
-tipo: NIL
+base: expr
 
-blocop: NIL
+expr: CALL(ID, args)          1 { fprintf(outfp, pfCALL pfTRASH pfPUSH, mkfunc(LEFT_CHILD(p)->value.s), (int)(pfWORD*(RIGHT_CHILD(p)->place))); }
+
+expr: ATR(expr, lv)           1 { fprintf(outfp, pfSTORE); }
+expr: ATR(expr, LOCAL)        1 { fprintf(outfp, pfDUP pfLOCA, RIGHT_CHILD(p)->value.i * (pfWORD/4)); }
+
+expr: INT                     1 { fprintf(outfp, pfIMM, p->value.i); }
+expr: STR                     1 { lbl++; fprintf(outfp, pfRODATA pfALIGN pfLABEL, mklbl(lbl)); outstr(p->value.s); fprintf(outfp, pfTEXT pfADDR, mklbl(lbl)); }
+
+
+lv: ID 
+
+args: ARGS(args, expr)      
+args: ARGS(NIL, expr)         
 %%
+
+void externs()
+{
+  int i;
+  
+  for (i = 0; i < extcnt; i++)
+    if (extrns[i])
+      fprintf(outfp, pfEXTRN, extrns[i]);
+}
+
 void variable(char *name, Node *type, Node *init)
 {
   int i = 0, siz = 1;
@@ -87,10 +113,16 @@ void defFunction(char *name, int enter, Node *stmt)
   fprintf(outfp, pfLEAVE pfRET); // just in case ... 
   freeNode(stmt);
 
-  /*
+  
   for (i = 0; i < extcnt; i++)
     if (extrns[i] && strcmp(extrns[i], mkfunc(name)) == 0) extrns[i] = 0;
-  */
+  
 }
 
+void extrnFunction(char *name){
+  extrns[extcnt++] = dupstr(mkfunc(name));
+}
 
+void externVariable(char *name){
+  extrns[extcnt++] = dupstr(name);
+}

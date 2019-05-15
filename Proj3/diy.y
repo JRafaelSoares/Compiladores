@@ -9,7 +9,7 @@
 
 extern int yylex();
 
-extern void variable(char *, Node *, Node *), defFunction(char *, int, Node *);
+extern void variable(char *, Node *, Node *), defFunction(char *, int, Node *), externs(), extrnFunction(char *);
 
 void yyerror(char *s);
 void declare(int pub, int cnst, Node *type, char *name, Node *value);
@@ -21,7 +21,8 @@ int noassign(Node *arg1, Node *arg2);
 static int ncicl;
 static char *fpar;
 
-static int pos = 4;
+static int pos = 8;
+static int posRet;
 %}
 
 %union {
@@ -56,8 +57,11 @@ static int pos = 4;
 
 %token LOCAL POSINC POSDEC PTR CALL START PARAM NIL
 %%
-file	:
-		| file error ';'
+
+extern: file 								{ externs(); }
+
+file	: 
+		| file error ';' 			
 		| file public tipo ID ';'			{ IDnew($3->value.i, $4, 0); 	declare($2, 0, $3, $4, 0); }
 		| file public CONST tipo ID ';'		{ IDnew($4->value.i+5, $5, 0); 	declare($2, 1, $4, $5, 0); }
 		| file public tipo ID init			{ IDnew($3->value.i, $4, 0); 	declare($2, 0, $3, $4, $5); }
@@ -88,8 +92,8 @@ init	: ATR ID ';'		{ $$ = strNode(ID, $2); $$->info = IDfind($2, 0) + 10; }
 		| ATR '-' REAL ';'	{ $$ = realNode(REAL, -$3); $$	->info = 3; }
         ;
 
-finit   : '(' params {pos = 0;} ')' blocop { $$ = binNode('(', $5, $2); }
-		| '(' {pos = 0;} ')' blocop        { $$ = binNode('(', $4, 0); }
+finit   : '(' params {pos = posRet;} ')' blocop { $$ = binNode('(', $5, $2); }
+		| '(' {pos = posRet;} ')' blocop        { $$ = binNode('(', $4, 0); }
 		;
 
 blocop  : ';'   { $$ = 0; }
@@ -115,6 +119,7 @@ decls	:                       { $$ = 0; }
 
 decl	: tipo ID               { $$ = binNode(PARAM, $1, strNode(ID, $2));
                                   IDnew($1->value.i, $2, pos); pos -= $1->info;
+                                  if (IDlevel() == 1) fpar[++fpar[0]] = $1->value.i;
                                 }
 		;
 
@@ -173,7 +178,7 @@ lv		: ID		{ long pos; int typ = IDfind($1, &pos);
 			    if (typ >= 5) typ -= 5;
 			    $$->info = typ;
 			  }
-	;
+		;
 
 expr	: lv		{ $$ = uniNode(PTR, $1); $$->info = $1->info; }
 	| '*' lv        { $$ = uniNode(PTR, uniNode(PTR, $2)); if ($2->info % 5 == 2) $$->info = 1; else if ($2->info / 10 == 1) $$->info = $2->info % 10; else yyerror("can dereference lvalue"); }
@@ -238,7 +243,10 @@ void enter(int pub, int typ, char *name) {
 	if (IDfind(name, (long*)IDtest) < 20)
 		IDnew(typ+20, name, (long)fpar);
 	IDpush();
-	if (typ != 4) IDnew(typ, name, 0);
+	if (typ != 4){ 
+		posRet = typ % 3 != 0 ? -4 : -8;
+		IDnew(typ, name, posRet);
+	}
 }
 
 int checkargs(char *name, Node *args) {
@@ -312,12 +320,14 @@ void function(int pub, Node *type, char *name, Node *body)
 {
 	Node *bloco = LEFT_CHILD(body);
 	IDpop();
-	if (bloco != 0) { /* not a forward declaration */
+	if (bloco != 0) { /* not a forward declaration */		
 		long par;
 		int fwd = IDfind(name, &par);
 		if (fwd > 40) yyerror("duplicate function");
-		else IDreplace(fwd+40, name, par);
+		else{
+			IDreplace(fwd+40, name, par);
+			defFunction(name, -pos, body);
+			} 
 	}
-
-	defFunction(name, -pos, body);
+	else{ extrnFunction(name); }
 }

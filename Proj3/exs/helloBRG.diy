@@ -30,6 +30,8 @@ file: file public VOID ID { enter($2, 4, $4); } finit { function($2, intNode(VOI
 					list: base
 						base: expr ';'              { $$ = $1; }
 							expr: ID '(' args ')' { $$ = binNode(CALL, strNode(ID, $1), $3); $$->info = checkargs($1, $3); }
+								args: expr
+									expr: STR
 					base: expr ';'              { $$ = $1; }
 						expr: lv ATR expr   { $$ = binNode(ATR, $3, $1); if ($$->info % 10 > 5) yyerror("constant value to assignment"); if (noassign($1, $3)) yyerror("illegal assignment"); $$->info = $1->info; }
 							lv		: ID		{ 	long pos; int typ = IDfind($1, &pos);
@@ -38,9 +40,4 @@ file: file public VOID ID { enter($2, 4, $4); } finit { function($2, intNode(VOI
 			  		  								$$->info = typ;
 												}
 							expr	: INT           { $$ = intNode(INT, $1); $$->info = 1; }
-
-					base: expr ';'              { $$ = $1; }
-						expr: ID '(' args ')' { $$ = binNode(CALL, strNode(ID, $1), $3);
-							args: expr		{ $$ = binNode(',', nilNode(NIL), $1); }
-								expr: STR           { $$ = strNode(STR, $1); $$->info = 2; }
 
