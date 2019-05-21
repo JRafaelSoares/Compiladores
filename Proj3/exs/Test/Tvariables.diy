@@ -1,0 +1,41 @@
+public void prints(string s)
+public void printi(integer i)
+public void printd(number d)
+
+integer a;
+integer b := 1
+string c := "ola"
+string d := const "adeus"
+== number e := 4.1;
+== number f;
+== number * g := e;
+integer * h := a;
+string * i := c;
+string j;
+
+public integer entry (integer argc, string *argv, string *envp) {
+  == f := 1.2;
+  a := 0;
+  j := "out";
+
+  printi(a)
+  printi(b)
+  prints(c)
+  prints(" ")
+  prints(d)
+  ==printd(e)
+  prints(" ")
+  ==printd(f)
+  prints(" ")
+  ==printd(*g)
+  prints(" ")
+  printi(*h)
+  prints(" ")
+  prints(*i)
+  prints(" ")
+  prints(j)
+  prints("\n01ola adeus4.1 1.2 4.1 0 ola out <- expected\n")
+
+};
+
+== expected 01ola adeus4.1 1.2 4.1 0 ola out

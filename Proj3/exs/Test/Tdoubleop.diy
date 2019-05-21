@@ -1,0 +1,35 @@
+public void prints(string s)
+public void printi(integer i)
+public void printd(number d)
+
+public integer entry (integer argc, string *argv, string *envp) {
+  number a;
+
+  printd(4 * 2.1)
+  prints(" ")
+  printd(2.1 * 4)
+  prints(" ")
+  printd(3 / 1.5)
+  prints(" ")
+  printd(1.5 / 3)
+  prints(" ")
+  printi(2.1 < 4)
+  printi(2.1 > 4)
+  printi(2.1 <> 4)
+  printi(2.1 = 4)
+  printi(4.1 = 4.1)
+  printi(4.1 >= 4.1)
+  prints(" ")
+  a := 1;
+  printd(a)
+  prints(" ")
+  a := 1.1;
+  printd(a)
+  prints(" ")
+
+  prints("\n8.4 8.4 2 5E-1 101011 1 1.1 <- expected\n")
+
+  entry := 0;
+};
+
+== expected 8.4 8.4 2 5E-1 101011 1 1.1

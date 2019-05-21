@@ -1,0 +1,38 @@
+public void prints(string s)
+public void printi(integer i)
+public void printd(number d)
+
+
+public void entry (integer argc, string *argv, string *envp) {
+  integer a;
+  integer d;
+  integer u;
+  a:=1;
+  printi(a)
+
+  do {
+  a:= a+1
+  printi(a)
+  } while a <> 3
+
+  do {
+    printi(9)
+  } while 0
+
+  prints(" ")
+  d:=0;
+  do {
+    u:= 0
+    do {
+      printi(d)
+      printi(u)
+      prints(" ")
+      u := u+1
+    } while u<10
+    d := d + 1
+  } while d < 2
+
+  prints("\n1239 00 01 02 ... 19 <- expected\n")
+};
+
+== expected 1239 00 01 02 ... 19

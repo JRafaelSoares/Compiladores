@@ -1,0 +1,21 @@
+public void prints(string s)
+public void printi(integer i)
+public void printd(number d)
+
+
+public void entry (integer argc, string *argv, string *envp) {
+  integer a;
+  a:= 1
+  {
+  integer a;
+  integer b;
+  a := 4;
+  b := 2;
+  printi(a)
+  printi(b)
+  }
+  printi(a)
+  prints("\n421 <- expected\n")
+};
+
+== expected 421

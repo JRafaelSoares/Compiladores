@@ -1,0 +1,28 @@
+public void prints(string s)
+public void printd(number d)
+public void printi(integer i)
+public void println()
+public integer readi()
+
+integer seed := 100003
+integer mod := 1000000
+public void srand(integer s) { if s >= 0 & s < mod then seed := s; };
+public integer rand() { rand := seed := (seed * 27983 + 149) % mod;  printi(rand); prints("   <- random number generated\n");};
+
+public integer entry (integer argc, string *argv, string *envp) {
+  integer cnt
+  integer i
+  number sum
+
+  prints("Número de valores pseudo-aleatórios a gerar: ")
+  cnt := readi()
+  i := 0
+  sum := 0
+  if cnt > 0 then
+    do
+      sum := sum + rand()
+    while ++i < cnt
+  printd(sum / cnt)
+  println()
+  entry := 0
+};

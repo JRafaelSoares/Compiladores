@@ -1,0 +1,15 @@
+public void prints(string s)
+public void printi(integer i)
+public void printd(number d)
+
+public void entry (integer argc, string *argv, string *envp) {
+  integer i;
+  i := 4;
+  argc := 1;
+  printi(argc);
+  printi(i);
+  prints("\n14 <- expected\n")
+
+};
+
+== expected 14

@@ -1,0 +1,63 @@
+public void prints(string i)
+public void printi(integer i)
+public void printd(number d)
+
+public integer strcmp(string a, string b) {
+  integer i
+  i := 0
+  if a[i] <> 0 & b[i] <> 0 & a[i] = b[i] then
+    do
+      ++i
+    while a[i] <> 0 & b[i] <> 0 & a[i] = b[i];
+  strcmp := b[i] - a[i];
+};
+
+public string strcpy(string a, string b) {
+  integer i
+  i := 0
+  strcpy := a
+  if b <> 0 & *b <> 0 then
+    do {
+      a[i] := b[i];
+      i++;
+    } while b[i] <> 0
+  a[i] := 0
+};
+
+public string strchr(string a, integer b) {
+  integer i
+  i := 0
+  strchr := 0
+  if *a <> 0 then
+    do
+      if a[i] = b then {
+        strchr := &a[i];
+        break;
+      } else ++i
+    while a[i] <> 0
+};
+
+string c :=  "MNOPQRS";
+string d := "aa"
+string e := "umafrase"
+public void entry (integer argc, string *argv, string *envp) {
+  string a;
+  string b;
+
+  a := c;
+  b := d;
+  prints(strchr(a,81))
+  prints(" ")
+  prints(e)
+  prints(" ")
+  prints(strcpy(e, c))
+  prints(" ")
+  prints(e)
+  prints(" ")
+  printi(strcmp(e,c))
+  printi(strcmp(e,strchr(e,81)))
+  printi(strcmp(strchr(e,80), e))
+
+  prints("\nQRS umafrase MNOPQRS MNOPQRS 04-3 <- expected\n")
+
+};

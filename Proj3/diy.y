@@ -9,7 +9,7 @@
 
 extern int yylex();
 
-extern void variable(char *, Node *, Node *), defFunction(char *, int, Node *), externs(), extrnFunction(char *);
+extern void variable(char *, Node *, Node *, int, int), defFunction(char *, int, Node *), externs(), extrnFunction(char *), externVariable(char *);
 
 void yyerror(char *s);
 void declare(int pub, int cnst, Node *type, char *name, Node *value);
@@ -22,7 +22,7 @@ static int ncicl;
 static char *fpar;
 
 static int pos = 8;
-static int posRet;
+static int posRet = -4;
 %}
 
 %union {
@@ -89,10 +89,10 @@ init	: ATR ID ';'		{ $$ = strNode(ID, $2); $$->info = IDfind($2, 0) + 10; }
 		| ATR STR ';'		{ $$ = strNode(STR, $2); $$->info = 2; }
 		| ATR CONST STR ';'	{ $$ = strNode(CONST, $3); $$->info = 2+5; }
 		| ATR REAL ';'		{ $$ = realNode(REAL, $2); $$->info = 3; }
-		| ATR '-' REAL ';'	{ $$ = realNode(REAL, -$3); $$	->info = 3; }
+		| ATR '-' REAL ';'	{ $$ = realNode(REAL, -$3); $$->info = 3; }
         ;
 
-finit   : '(' params {pos = posRet;} ')' blocop { $$ = binNode('(', $5, $2); }
+finit   : '(' {pos = 8;} params {pos = posRet;} ')' blocop { $$ = binNode('(', $6, $3); }
 		| '(' {pos = posRet;} ')' blocop        { $$ = binNode('(', $4, 0); }
 		;
 
@@ -110,7 +110,7 @@ param	: tipo ID               { $$ = binNode(PARAM, $1, strNode(ID, $2));
                                 }
 		;
 
-bloco	: '{' { IDpush(); } decls list end '}'    { $$ = binNode('{', $5 ? binNode(';', $4, $5) : $4, $3); IDpop(); pos = 4;}
+bloco	: '{' { IDpush(); } decls list end '}'    { $$ = binNode('{', $5 ? binNode(';', $4, $5) : $4, $3); IDpop();}
 		;
 
 decls	:                       { $$ = 0; }
@@ -181,7 +181,7 @@ lv		: ID		{ long pos; int typ = IDfind($1, &pos);
 		;
 
 expr	: lv		{ $$ = uniNode(PTR, $1); $$->info = $1->info; }
-	| '*' lv        { $$ = uniNode(PTR, uniNode(PTR, $2)); if ($2->info % 5 == 2) $$->info = 1; else if ($2->info / 10 == 1) $$->info = $2->info % 10; else yyerror("can dereference lvalue"); }
+	| '*' lv        { $$ = uniNode(PTR, uniNode(PTR, $2)); if ($2->info / 10 == 1) $$->info = $2->info % 10; else if ($2->info % 5 == 2) $$->info = 1; else yyerror("can dereference lvalue"); }
 	| lv ATR expr   { $$ = binNode(ATR, $3, $1); if ($$->info % 10 > 5) yyerror("constant value to assignment"); if (noassign($1, $3)) yyerror("illegal assignment"); $$->info = $1->info; }
 	| INT           { $$ = intNode(INT, $1); $$->info = 1; }
 	| STR           { $$ = strNode(STR, $1); $$->info = 2; }
@@ -224,18 +224,33 @@ char **yynames =
 
 void declare(int pub, int cnst, Node *type, char *name, Node *value)
 {
+
   int typ;
+
+  if(pub){
+  	externVariable(name);
+  }
+  
   if (!value) {
     if (!pub && cnst) yyerror("local constants must be initialised");
+    variable(name, type, value, pub, cnst);
     return;
   }
-  if (value->attrib = INT && value->value.i == 0 && type->value.i > 10)
-  	return; /* NULL pointer */
-  if ((typ = value->info) % 10 > 5) typ -= 5;
-  if (type->value.i != typ)
-    yyerror("wrong types in initialization");
+  if (value->attrib == INT && value->value.i == 0 && type->value.i > 10){
 
-  variable(name, type, value);
+  	return; /* NULL pointer */
+  }
+
+  if ((typ = value->info) % 10 > 5) {
+  	typ -= 5;
+  }
+  
+  if (type->value.i != typ){
+  	printf("value of type: %d\n value of typ: %d\n\n", type->value.i, typ);
+    yyerror("wrong types in initialization");
+  }
+  
+  variable(name, type, value, pub, cnst); 
 }
 void enter(int pub, int typ, char *name) {
 	fpar = malloc(32); /* 31 arguments, at most */

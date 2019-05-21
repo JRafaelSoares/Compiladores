@@ -1,0 +1,66 @@
+public void prints(string i)
+public void printi(integer i)
+public void printd(number d)
+
+public void entry (integer argc, string *argv, string *envp) {
+  integer a
+  integer i
+  integer j
+  a:=1
+
+  do {
+    if a > 3 then break;
+    printi(a)
+    prints(" ")
+    a++;
+  } while a<9
+
+  prints("\n1 2 3 <- expected\n")
+
+  for a in 7 downto 1 step 1 do {
+      if a = 3 then break;
+      printi(a)
+      prints(" ")
+  }
+
+  prints("\n7 6 5 4 <- expected\n")
+
+  i := 2
+  do {
+    if i = 0 then break;
+    j:=1
+    do {
+      if j >= 5 then break;
+      printi(i)
+      printi(j)
+      prints(" ")
+      j := j + 2;
+    } while j<11
+
+    i--;
+  } while i>-3
+
+  prints("\n21 23 11 13 <- expected\n")
+
+  for i in 0 upto 7 step 2 do {
+    if i = 4 then break;
+    for j in 1 upto 7 step 1 do {
+      printi(i)
+      printi(j)
+      prints(" ")
+      if j = 4 then break;
+    }
+  }
+  prints("\n01 02 03 04 21 22 23 24 <- expected\n")
+
+  for i in 0 upto 7 step 1 do {
+    for j in 1 upto 4 step 1 do {
+      printi(i)
+      printi(j)
+      prints(" ")
+      if j = 2  & i = 1 then break 2;
+    }
+  }
+  prints("\n01 02 03 04 11 12 <- expected\n")
+
+};

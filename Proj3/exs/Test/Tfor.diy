@@ -1,0 +1,39 @@
+public void prints(string i)
+public void printi(integer i)
+public void printd(number d)
+
+public integer entry (integer argc, string *argv, string *envp) {
+  integer i
+  integer j
+  number a
+
+	for i in 1 upto 4 step 1 do {
+    printi(i)
+    prints(" ")
+  }
+  prints("\n1 2 3 4 <- expected\n")
+
+	for i in 4 downto 1 step 1 do {
+    printi(i)
+    prints(" ")
+  }
+  prints("\n4 3 2 1 <- expected\n")
+
+  for i in 1 upto 4 step 2 do {
+    for j in 1 upto 4 step 2 do {
+      printi(i)
+      printi(j)
+      prints(" ")
+    }
+  }
+  for i in 1 upto 0 step 1 do {
+    prints("ERROR: this print should no occur\n")
+  }
+  prints("\n11 13 31 33 <- expected\n")
+
+  for i in 1 upto 1 step 1 do {
+    prints("TEST: this print should occur once\n")
+  }
+
+
+};

@@ -1,0 +1,17 @@
+public void prints(string s)
+public void printi(integer i)
+public void printd(number d)
+public void printd(number d)
+public integer ola()
+
+public integer ola(){
+  ola := 1
+};
+
+public void entry (integer argc, string *argv, string *envp) {
+  printi(ola())
+  prints("\n1 <- expected\n")
+};
+
+== expected 1
+== (also no repeated externs in .asm file)

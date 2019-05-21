@@ -1,5 +1,14 @@
 public void prints(string s)
+public void printi(integer i)
+
+integer ola := 7;
+
 public integer entry (integer argc, string *argv, string *envp) {
+  integer cnt;
+  cnt := 5;
+
+  printi(cnt)
   prints("olá pessoal!\n")
+  printi(ola)
   entry := 0
 };

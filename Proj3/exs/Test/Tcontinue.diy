@@ -1,0 +1,58 @@
+public void prints(string i)
+public void printi(integer i)
+public void printd(number d)
+
+
+public void entry (integer argc, string *argv, string *envp) {
+  integer i;
+  integer j;
+
+  for i in 1 upto 10 step 1 do {
+    if i%2 = 1 then continue;
+    printi(i)
+    prints(" ")
+  }
+  prints("\n2 4 6 8 10 <- expected\n")
+
+  i:=1
+  do{
+    i++;
+    if(i%3 <> 0) then continue;
+    printi(i)
+    prints(" ")
+
+  } while i<16
+
+  prints("\n3 6 9 12 15 <- expected\n")
+
+  for i in 1 upto 3 step 1 do {
+
+    for j in 1 upto 6 step 1 do {
+      if j = 4 & i = 2 then continue 2;
+      if j%2 = 1 then continue;
+      printi(i)
+      printi(j)
+      prints(" ")
+    }
+
+    prints("out ")
+  }
+    prints("\n12 14 16 out 22 32 34 36 out <- expected\n")
+
+    i:=0
+    do{
+      i++;
+      for j in 1 upto 6 step 1 do {
+        if j = 4 & i = 2 then continue 2;
+        if j%2 = 1 then continue;
+        printi(i)
+        printi(j)
+        prints(" ")
+      }
+
+      prints("out ")
+    } while i<=2
+
+    prints("\n12 14 16 out 22 32 34 36 out <- expected\n")
+
+};

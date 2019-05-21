@@ -1,0 +1,17 @@
+public void prints(string s)
+public void printi(integer i)
+public void printd(number d)
+
+
+public integer entry (integer argc, string *argv, string *envp) {
+  if 2 = 2 then {
+  printi(6)
+  printi(4)
+  }
+  if 2 <> 2 then printi(2)
+  else printi(6)
+
+  prints("\n646 <- expected\n")
+};
+
+== expected 646
