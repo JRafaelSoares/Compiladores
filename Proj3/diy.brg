@@ -47,6 +47,14 @@ list: END(list, base)
 list: base
 
 base: expr
+base: bloco
+
+%! if-else
+cond: expr                    1 { p->place = ++lbl; fprintf(outfp, pfJZ, mklbl(p->place)); }
+base: IF(cond, base)          1 { fprintf(outfp, pfLABEL, mklbl(LEFT_CHILD(p)->place)); }
+
+base: ELSE(if, base)          1 { fprintf(outfp, pfLABEL, mklbl(LEFT_CHILD(p)->place)); }
+if: IF(cond,base)             1 { p->place = ++lbl; fprintf(outfp, pfJMP pfLABEL, mklbl(p->place), mklbl(LEFT_CHILD(p)->place)); }
 
 %! expressions
 
