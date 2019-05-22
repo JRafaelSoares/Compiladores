@@ -36,7 +36,7 @@ static int extcnt;
 %}
 %include "y.tab.h"
 %term FUNC='(' ARGS=',' BLOCK='{' END=';' 
-%term ADD='+' SUB='-' MUL='*' DIV='/' MOD='%' EQ='=' LT='<' GT='>' AND='&' OR='|'
+%term ADD='+' SUB='-' MUL='*' DIV='/' MOD='%' EQ='=' LT='<' GT='>' AND='&' OR='|' INDEX='['
 %%
 
 finit: FUNC(bloco)
@@ -46,8 +46,8 @@ bloco: BLOCK(list)
 list: END(list, base)
 list: base
 
-base: expr
-base: bloco
+base: expr                    1 { fprintf(outfp, pfTRASH, pfWORD); }
+base: bloco 
 
 %! base in if-else/do-while can include break, add after
 
@@ -64,6 +64,10 @@ base: WHILE(DO(start, base), expr)         1 { fprintf(outfp, pfJNZ, mklbl(LEFT_
 
 start: START                  1 { p->place = ++lbl; fprintf(outfp, pfLABEL, mklbl(p->place)); }     
 
+%! for 
+
+base: END(expr, FOR(in, END(base, expr))) { fprintf(outfp, pfJMP pfLABEL, mklbl(LEFT_CHILD( LEFT_CHILD( RIGHT_CHILD(p) ) )->place), mklbl(LEFT_CHILD( RIGHT_CHILD(p) )->place)); }
+in: IN(start, expr) {p->place = ++lbl; fprintf(outfp, pfJZ, mklbl(p->place));}
 %! expressions
 
 %! Pointers and IDs
@@ -75,7 +79,8 @@ expr: INT                     1 { fprintf(outfp, pfIMM, p->value.i); }
 expr: STR                     1 { lbl++; fprintf(outfp, pfRODATA pfALIGN pfLABEL, mklbl(lbl)); outstr(p->value.s); fprintf(outfp, pfTEXT pfADDR, mklbl(lbl)); }
   
 %! Atrib
-expr: ATR(expr, lv)           1 { fprintf(outfp, pfSTORE); }
+assign: expr                  1 { fprintf(outfp, pfDUP); }
+expr: ATR(assign, lv)         1 { fprintf(outfp, pfSTORE); }
 
 %! negations
 expr: UMINUS(expr)            1 { fprintf(outfp, pfNEG); } 
@@ -121,6 +126,9 @@ expr: CALL(ID, VOID)          1 { fprintf(outfp, pfCALL, mkfunc(LEFT_CHILD(p)->v
 %! left values
 lv: ID                        1 { fprintf(outfp, pfADDR, p->value.s); }
 lv: LOCAL                     1 { fprintf(outfp, pfLOCAL, p->value.i); }
+lv: INDEX(lvec, expr)         1 { fprintf(outfp, pfIMM pfMUL pfADD, pfWORD); }
+
+lvec: lv                      1 { fprintf(outfp, pfLOAD); }
 
 args: ARGS(args, expr)      
 args: ARGS(NIL, expr)         

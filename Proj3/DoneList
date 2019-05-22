@@ -1,5 +1,15 @@
-Texterns;
-Tif
-Tlocal
-Toperation (falta o !)
-Tvariables
+Tblock     --
+Tbreak
+Tcontinue
+Tdoubleop
+Texterns   --
+Tfor 	   --
+Tif 	   --
+Tincr 	   --
+Tlocal     --
+Tmean
+Toperation (falta o !) -/
+Tref 		Should be working but doesnt
+Tstring
+Tvariables --
+Twhile 	   --
