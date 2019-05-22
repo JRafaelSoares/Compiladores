@@ -9,7 +9,7 @@
 
 extern int yylex();
 
-extern void variable(char *, Node *, Node *, int, int), defFunction(char *, int, Node *), externs(), extrnFunction(char *), externVariable(char *);
+extern void variable(char *, Node *, Node *, int, int), defFunction(char *, int, Node *, Node *), externs(), extrnFunction(char *), externVariable(char *);
 
 void yyerror(char *s);
 void declare(int pub, int cnst, Node *type, char *name, Node *value);
@@ -158,8 +158,8 @@ list	: base
 		| list base     { $$ = binNode(';', $1, $2); }
 		;
 
-args	: expr		{ $$ = binNode(',', nilNode(NIL), $1); }
-		| args ',' expr { $$ = binNode(',', $1, $3); }
+args	: expr		{ $$ = binNode(',', $1, nilNode(NIL)); }
+		| args ',' expr { $$ = binNode(',', $3, $1); }
 		;
 
 lv		: ID		{ long pos; int typ = IDfind($1, &pos);
@@ -286,7 +286,7 @@ int checkargs(char *name, Node *args) {
 				err = 1;
 				break;
 			}
-			n = RIGHT_CHILD(args);
+			n = LEFT_CHILD(args);
 			typ = n->info;
 			if (typ % 10 > 5) typ -= 5; /* remove CONST */
 			null =  (n->attrib == INT && n->value.i == 0 && arg[i] > 10) ? 1 : 0;
@@ -295,7 +295,7 @@ int checkargs(char *name, Node *args) {
 				err = 1;
 				break;
 			}
-			args = LEFT_CHILD(args);
+			args = RIGHT_CHILD(args);
 			i--;
 		} while (args->attrib != NIL);
 		if (!err && i > 0)
@@ -341,7 +341,7 @@ void function(int pub, Node *type, char *name, Node *body)
 		if (fwd > 40) yyerror("duplicate function");
 		else{
 			IDreplace(fwd+40, name, par);
-			defFunction(name, -pos, body);
+			defFunction(name, -pos, body, type);
 			} 
 	}
 	else{ extrnFunction(name); }

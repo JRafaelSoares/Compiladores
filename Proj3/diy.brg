@@ -12,7 +12,7 @@ char *dupstr(const char *s);
 
 static char *extrns[100]; /* emit externs at the end only */
 static int extcnt;
-
+int checkType(int type);
 int lbl;
 char *mklbl(int n) {
   static char buf[20];
@@ -46,7 +46,7 @@ bloco: BLOCK(list)
 list: END(list, base)
 list: base
 
-base: expr                    1 { fprintf(outfp, pfTRASH, pfWORD); }
+base: expr                    1 {if(p->info != 4) fprintf(outfp, pfTRASH, pfWORD); }
 base: bloco 
 
 %! base in if-else/do-while can include break, add after
@@ -75,8 +75,8 @@ expr: PTR(lv)                 1 { fprintf(outfp, pfLOAD); }
 expr: PTR(PTR(lv))            1 { fprintf(outfp, pfLOAD pfLOAD); }     
 
 %! values
-expr: INT                     1 { fprintf(outfp, pfIMM, p->value.i); }
-expr: STR                     1 { lbl++; fprintf(outfp, pfRODATA pfALIGN pfLABEL, mklbl(lbl)); outstr(p->value.s); fprintf(outfp, pfTEXT pfADDR, mklbl(lbl)); }
+expr: INT                     1 { fprintf(outfp, pfIMM, p->value.i);}
+expr: STR                     1 { lbl++; fprintf(outfp, pfRODATA pfALIGN pfLABEL, mklbl(lbl)); outstr(p->value.s); fprintf(outfp, pfTEXT pfADDR, mklbl(lbl));}
   
 %! Atrib
 assign: expr                  1 { fprintf(outfp, pfDUP); }
@@ -87,6 +87,8 @@ expr: UMINUS(expr)            1 { fprintf(outfp, pfNEG); }
 expr: NOT(expr)               1 { fprintf(outfp, pfIMM pfEQ, 0); }
 
 %! reference
+
+expr: REF(lv)                 
 %! factorial
 
 %! increment and decrement
@@ -118,7 +120,7 @@ or: expr                      1 { p->place = ++lbl; fprintf(outfp, pfDUP pfJNZ p
 
 %! Function calls
 expr: CALL(ID, args)          1 { fprintf(outfp, pfCALL pfTRASH, mkfunc(LEFT_CHILD(p)->value.s), (int)(pfWORD*(RIGHT_CHILD(p)->place)));
-                                  if(p->info % 5 != 4){ fprintf(outfp, pfPUSH);} }
+                                 if(p->info % 5 != 4){ fprintf(outfp, pfPUSH);} }
 
 expr: CALL(ID, VOID)          1 { fprintf(outfp, pfCALL, mkfunc(LEFT_CHILD(p)->value.s));
                                   if(p->info % 5 != 4){ fprintf(outfp, pfPUSH);} }  
@@ -130,10 +132,16 @@ lv: INDEX(lvec, expr)         1 { fprintf(outfp, pfIMM pfMUL pfADD, pfWORD); }
 
 lvec: lv                      1 { fprintf(outfp, pfLOAD); }
 
-args: ARGS(args, expr)      
-args: ARGS(NIL, expr)         
+args: ARGS(expr, args)          { p->place = (checkType(LEFT_CHILD(p)->info)) + (RIGHT_CHILD(p)->place); }
+args: ARGS(expr, NIL)           { p->place = (checkType(LEFT_CHILD(p)->info));}
 %%
 //expr: ATR(expr, LOCAL)        1 { fprintf(outfp, pfDUP pfLOCA, RIGHT_CHILD(p)->value.i * (pfWORD/4)); }
+int checkType(int type){
+  if(type / 10 != 0 && type == 3){
+      return 2;
+  }
+  return 1;
+}
 void externs()
 {
   int i;
@@ -160,15 +168,14 @@ void variable(char *name, Node *type, Node *init, int public, int constant)
       fprintf(outfp, pfDATA);
     }
   }
-  
 
   fprintf(outfp, pfALIGN pfLABEL, name);
 
   if (init) {
   	switch (init->attrib) {
       case INT:   fprintf(outfp, pfINTEGER, init->value.i);  break;
-	    case ID:    fprintf(outfp, pfID, init->value.s); break;
-      case REAL:  fprintf(outfp, pfDOUBLE, init->value.r); break;
+	    case ID:    fprintf(outfp, pfID, init->value.s);       break;
+      case REAL:  fprintf(outfp, pfDOUBLE, init->value.r);   break;
       case STR: { char *l = mklbl(++lbl);
                   fprintf(outfp, pfID, l);
                   fprintf(outfp, pfDATA);
@@ -193,7 +200,7 @@ void variable(char *name, Node *type, Node *init, int public, int constant)
 
 }
 
-void defFunction(char *name, int enter, Node *stmt)
+void defFunction(char *name, int enter, Node *stmt, Node *type)
 {
   int i;
   extern int errors, trace;
@@ -203,6 +210,11 @@ void defFunction(char *name, int enter, Node *stmt)
   fflush(stdout);
   fprintf(outfp, pfTEXT pfALIGN pfGLOBL pfLABEL pfENTER, mkfunc(name), pfFUNC, mkfunc(name), enter * (pfWORD/4));
   yyselect(stmt);
+  if(type->value.i != 4){
+    fprintf(outfp, pfLOCAL pfLOAD pfPOP, -type->info);
+    if(type->info == 4){ fprintf(outfp, pfLOCAL pfLOAD pfPOP, -type->info); }
+    else { fprintf(outfp, pfLOCAL pfLOAD pfDPOP, -type->info); }
+  }
   fprintf(outfp, pfLEAVE pfRET); // just in case ... 
   freeNode(stmt);
 
