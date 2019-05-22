@@ -49,12 +49,20 @@ list: base
 base: expr
 base: bloco
 
+%! base in if-else/do-while can include break, add after
+
 %! if-else
 cond: expr                    1 { p->place = ++lbl; fprintf(outfp, pfJZ, mklbl(p->place)); }
 base: IF(cond, base)          1 { fprintf(outfp, pfLABEL, mklbl(LEFT_CHILD(p)->place)); }
 
 base: ELSE(if, base)          1 { fprintf(outfp, pfLABEL, mklbl(LEFT_CHILD(p)->place)); }
 if: IF(cond,base)             1 { p->place = ++lbl; fprintf(outfp, pfJMP pfLABEL, mklbl(p->place), mklbl(LEFT_CHILD(p)->place)); }
+
+%! do-while
+
+base: WHILE(DO(start, base), expr)         1 { fprintf(outfp, pfJNZ, mklbl(LEFT_CHILD(LEFT_CHILD(p))->place)); }
+
+start: START                  1 { p->place = ++lbl; fprintf(outfp, pfLABEL, mklbl(p->place)); }     
 
 %! expressions
 
