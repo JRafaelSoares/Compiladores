@@ -118,7 +118,7 @@ decls	:                       { $$ = 0; }
 		;
 
 decl	: tipo ID               { $$ = binNode(PARAM, $1, strNode(ID, $2));
-                                  IDnew($1->value.i, $2, pos); pos -= $1->info;
+                                  pos -= $1->info; IDnew($1->value.i, $2, pos); 
                                   if (IDlevel() == 1) fpar[++fpar[0]] = $1->value.i;
                                 }
 		;

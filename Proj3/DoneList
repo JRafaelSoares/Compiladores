@@ -2,7 +2,7 @@ Talloc
 Tblock     --
 Tbreak 	   --
 Tcontinue  --
-Tdoubleop
+Tdoubleop  --
 Texterns   --
 Tfor 	   --
 Tif 	   --
