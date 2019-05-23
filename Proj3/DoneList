@@ -1,5 +1,5 @@
 Tblock     --
-Tbreak
+Tbreak 	   --
 Tcontinue
 Tdoubleop
 Texterns   --
@@ -7,9 +7,9 @@ Tfor 	   --
 Tif 	   --
 Tincr 	   --
 Tlocal     --
-Tmean
+Tmean 
 Toperation (falta o !) -/
-Tref 		Should be working but doesnt
+Tref 	   --
 Tstring
 Tvariables --
 Twhile 	   --
