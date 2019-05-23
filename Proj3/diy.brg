@@ -38,16 +38,18 @@ static long conts[30], contcnt; /* emit continues */
 
 static long brklbl[20], brkcnt; /* break labels */
 
-int checkIntReturn(Node* n) { return (RIGHT_CHILD(n)->info != 3) ? 1: MAX_COST;}
-int checkDoubleReturn(Node* n) { return (RIGHT_CHILD(n)->info == 3) ? 1: MAX_COST;}
-int checkIntLV(Node *n) { return (n->info != 3) ? 1 : MAX_COST; }
-int checkDoubleLV(Node *n) { return (n->info == 3) ? 1 : MAX_COST; }
+int checkIntRight(Node* n)    { return (RIGHT_CHILD(n)->info != 3) ? 1: MAX_COST;}
+int checkDoubleRight(Node* n) { return (RIGHT_CHILD(n)->info == 3 ) ? 1: MAX_COST;}
+int checkIntAlloc(Node* n)    { return (RIGHT_CHILD(n)->info != 13) ? 1: MAX_COST;}
+int checkDoubleAlloc(Node* n) { return (RIGHT_CHILD(n)->info == 13 ) ? 1: MAX_COST;}
+int checkIntLV(Node *n)       { return (n->info != 3) ? 1 : MAX_COST; }
+int checkDoubleLV(Node *n)    { return (n->info == 3) ? 1 : MAX_COST; }
 
 
 %}
 %include "y.tab.h"
 %term FUNC='(' ARGS=',' BLOCK='{' END=';' 
-%term ADD='+' SUB='-' MUL='*' DIV='/' MOD='%' EQ='=' LT='<' GT='>' AND='&' OR='|' INDEX='['
+%term ADD='+' SUB='-' MUL='*' DIV='/' MOD='%' EQ='=' LT='<' GT='>' AND='&' OR='|' INDEX='[' ALLOC='#'
 %%
 
 finit: FUNC(bloco)
@@ -93,11 +95,20 @@ in: IN(startFor, expr)        1 { p->place = ++lbl; brklbl[brkcnt++] = p->place;
 
 startFor: START               1 { p->place = ++lbl; fprintf(outfp, pfLABEL, mklbl(p->place)); }
 
+%! Allocations
+
+base: ALLOC(alloc,lv)         checkIntAlloc { fprintf(outfp, pfSTORE); }
+alloc:  expr                  1 { fprintf(outfp, pfIMM pfMUL pfALLOC pfSP, pfWORD); }
+
+base: ALLOC(ralloc,lv)         checkDoubleAlloc { fprintf(outfp, pfSTORE); }
+ralloc:  expr                  1 { fprintf(outfp, pfIMM pfMUL pfALLOC pfSP, pfWORD*2); }
+
 %! expressions
 
 %! Pointers and IDs
 expr: PTR(lv)                 checkIntLV { fprintf(outfp, pfLOAD); }      
 expr: PTR(PTR(lv))            checkIntLV { fprintf(outfp, pfLOAD pfLOAD); }     
+
 rexpr: PTR(lv)                checkDoubleLV { fprintf(outfp, pfLOAD2); }
 rexpr: PTR(PTR(lv))           checkDoubleLV { fprintf(outfp, pfLOAD2 pfLOAD2); }     
 
@@ -107,9 +118,9 @@ expr: STR                     1 { lbl++; fprintf(outfp, pfRODATA pfALIGN pfLABEL
 rexpr: REAL                   1 { lbl++; fprintf(outfp, pfRODATA pfALIGN pfLABEL pfDOUBLE pfTEXT pfADDR pfLOAD2, mklbl(lbl), p->value.r, mklbl(lbl)); }
 
 %! Atrib
-expr: ATR(assign, lv)         checkIntReturn { fprintf(outfp, pfSTORE); }
+expr: ATR(assign, lv)         checkIntRight { fprintf(outfp, pfSTORE); }
 assign: expr                  1 { fprintf(outfp, pfDUP); }
-rexpr: ATR(rassign, lv)       checkDoubleReturn { fprintf(outfp, pfSTORE2); } 
+rexpr: ATR(rassign, lv)       checkDoubleRight { fprintf(outfp, pfSTORE2); } 
 rassign: rexpr                1 { fprintf(outfp, pfDUP2); }
 
 %! negations
@@ -120,6 +131,7 @@ expr: NOT(expr)               2 { fprintf(outfp, pfIMM pfEQ, 0); }
 %! reference
 
 expr: REF(lv)                 
+
 %! factorial
 
 %! increment and decrement
@@ -172,9 +184,9 @@ expr: CALL(ID, VOID)          2 { fprintf(outfp, pfCALL, mkfunc(LEFT_CHILD(p)->v
 %! left values
 lv: ID                        1 { fprintf(outfp, pfADDR, p->value.s); }
 lv: LOCAL                     1 { fprintf(outfp, pfLOCAL, p->value.i); }
-lv: INDEX(lvec, expr)         3 { fprintf(outfp, pfIMM pfMUL pfADD, pfWORD); }
+lv: INDEX(lvec, expr)         3 { fprintf(outfp, pfIMM pfMUL pfADD, pfWORD*(p->info == 1 ? 1 : 2)); }
 
-lvec: lv                      1 { fprintf(outfp, pfLOAD); }
+lvec: lv                      1 {  fprintf(outfp, pfLOAD); }
 
 args: ARGS(expr, args)        0 { p->place = (checkType(LEFT_CHILD(p)->info)) + (RIGHT_CHILD(p)->place); }
 args: ARGS(expr, NIL)         0 { p->place = (checkType(LEFT_CHILD(p)->info));}

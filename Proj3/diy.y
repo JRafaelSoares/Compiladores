@@ -227,8 +227,9 @@ void declare(int pub, int cnst, Node *type, char *name, Node *value)
 
   int typ;
 
-  if(pub){
+  if(pub && !value){
   	externVariable(name);
+  	return;
   }
   
   if (!value) {
