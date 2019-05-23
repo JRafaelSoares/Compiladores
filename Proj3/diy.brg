@@ -65,17 +65,18 @@ if: IF(cond, base)             1 { p->place = ++lbl; fprintf(outfp, pfJMP pfLABE
 
 %! do-while
 
-base: WHILE(do, expr)         1 { brkcnt--; fprintf(outfp, pfJNZ pfLABEL, mklbl(LEFT_CHILD(LEFT_CHILD(p))->place), mklbl(brklbl[brkcnt])); }
+base: WHILE(do, expr)         1 { brkcnt--; contcnt--; fprintf(outfp, pfJNZ pfLABEL, mklbl(LEFT_CHILD(LEFT_CHILD(p))->place), mklbl(brklbl[brkcnt])); }
 
-do: DO(start, base)           1 {  }        
+do: DO(start, base)           1 { fprintf(outfp, pfLABEL, mklbl(conts[contcnt-1])); }        
 
-start: START                  1 { p->place = ++lbl; fprintf(outfp, pfLABEL, mklbl(p->place)); brklbl[brkcnt++] = ++lbl; }     
+start: START                  1 { p->place = ++lbl; fprintf(outfp, pfLABEL, mklbl(p->place)); brklbl[brkcnt++] = ++lbl; conts[contcnt++] = ++lbl; }     
 
 %! for 
 
-base: END(expr, FOR(in, END(base, expr))) { brkcnt--; fprintf(outfp, pfJMP pfLABEL, mklbl(LEFT_CHILD( LEFT_CHILD( RIGHT_CHILD(p) ) )->place), mklbl(LEFT_CHILD( RIGHT_CHILD(p) )->place)); }
+base: END(expr, FOR(in, END(baseFor, expr))) { brkcnt--; contcnt--; fprintf(outfp, pfJMP pfLABEL, mklbl(LEFT_CHILD( LEFT_CHILD( RIGHT_CHILD(p) ) )->place), mklbl(LEFT_CHILD( RIGHT_CHILD(p) )->place)); }
 
-in: IN(startFor, expr)   1 { p->place = ++lbl; brklbl[brkcnt++] = p->place; fprintf(outfp, pfJZ, mklbl(p->place));}
+baseFor: base            1 { fprintf(outfp, pfLABEL, mklbl(conts[contcnt-1])); }
+in: IN(startFor, expr)   1 { p->place = ++lbl; brklbl[brkcnt++] = p->place; conts[contcnt++] = ++lbl; fprintf(outfp, pfJZ, mklbl(p->place));}
 
 startFor: START          1 { p->place = ++lbl; fprintf(outfp, pfLABEL, mklbl(p->place)); }
 
