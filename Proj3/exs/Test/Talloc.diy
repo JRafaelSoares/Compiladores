@@ -1,0 +1,99 @@
+public void prints(string s)
+public void printi(integer i)
+public void printd(number d)
+public void println()
+
+
+integer *a
+number *b
+string c
+string *d
+
+integer size := 3
+
+
+public integer entry (integer argc, string *argv, string *envp) {
+	
+	integer i
+	integer j
+
+	integer *e
+	number *f
+	string g
+	string *h
+
+
+	a # size;
+	b # size;
+	c # size + 1;
+	d # size;
+	e # size;
+	f # size;
+	g # size + 1;
+	h # size;
+
+	for i in 0 upto size - 1 do {
+		a[i] := i
+		b[i] := i + 0.1
+		c[i] := 97
+		d[i] := "bb"
+
+		e[i] := i + 1
+		f[i] := i + 0.2
+		g[i] := 98
+		h[i] := "cc"
+	}
+
+	c[i] := 0
+	g[i] := 0
+
+	prints("Testing global variables: \n\n")
+
+	for i in 0 upto size - 1 do {
+		printi(a[i])
+	}
+	prints("\nExpected: 012\n\n")
+
+
+	for i in 0 upto size - 1 do {
+		printd(b[i])
+		prints(" ")
+	}
+	prints("\nExpected: 1E-1 1.1 2.1\n\n")
+
+	prints(c)
+	prints("\nExpected: aaa\n\n")
+
+	for i in 0 upto size - 1 do {
+		prints(d[i])
+		prints(" ")
+	}
+	prints("\nExpected: bb bb bb\n\n")
+
+
+
+	prints("Testing local variables: \n\n")
+
+	for i in 0 upto size - 1 do {
+		printi(e[i])
+	}
+	prints("\nExpected: 123\n\n")
+
+
+	for i in 0 upto size - 1 do {
+		printd(f[i])
+		prints(" ")
+	}
+	prints("\nExpected: 2E-1 1.2 2.2\n\n")
+
+	prints(g)
+	prints("\nExpected: bbb\n\n")
+
+	for i in 0 upto size - 1 do {
+		prints(h[i])
+		prints(" ")
+	}
+	prints("\nExpected: cc cc cc\n\n")
+
+	entry := 0
+};

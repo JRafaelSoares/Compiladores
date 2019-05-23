@@ -33,6 +33,8 @@ static void outstr(char *s) {
 static char *extrns[100]; /* emit externs at the end only */
 static int extcnt;
 
+static long conts[30], contcnt; /* emit continues */
+
 static long brklbl[20], brkcnt; /* break labels */
 
 %}
@@ -50,33 +52,33 @@ list: base
 
 base: expr                    1 {if(p->info != 4) fprintf(outfp, pfTRASH, pfWORD); }
 base: bloco 
-
+base: BREAK     1 { fprintf(outfp, pfJMP, mklbl(brklbl[brkcnt - p->value.i])); }
+base: CONTINUE  1 { fprintf(outfp, pfJMP, mklbl(conts[contcnt - p->value.i]));}
 %! base in if-else/do-while can include break, add after
-
-stmt: BREAK   1 { fprintf(outfp, pfJMP, mklbl(brklbl[brkcnt - p->value.i])); }
-stmt: base 
 
 %! if-else
 cond: expr                    1 { p->place = ++lbl; fprintf(outfp, pfJZ, mklbl(p->place)); }
-base: IF(cond, stmt)          1 { fprintf(outfp, pfLABEL, mklbl(LEFT_CHILD(p)->place)); }
+base: IF(cond, base)          1 { fprintf(outfp, pfLABEL, mklbl(LEFT_CHILD(p)->place)); }
 
-base: ELSE(if, stmt)          1 { fprintf(outfp, pfLABEL, mklbl(LEFT_CHILD(p)->place)); }
-if: IF(cond, stmt)             1 { p->place = ++lbl; fprintf(outfp, pfJMP pfLABEL, mklbl(p->place), mklbl(LEFT_CHILD(p)->place)); }
+base: ELSE(if, base)          1 { fprintf(outfp, pfLABEL, mklbl(LEFT_CHILD(p)->place)); }
+if: IF(cond, base)             1 { p->place = ++lbl; fprintf(outfp, pfJMP pfLABEL, mklbl(p->place), mklbl(LEFT_CHILD(p)->place)); }
 
 %! do-while
 
-base: WHILE(do, expr)         1 { fprintf(outfp, pfJNZ pfLABEL, mklbl(LEFT_CHILD(LEFT_CHILD(p))->place), mklbl(LEFT_CHILD(LEFT_CHILD(p))->place +1)); }
+base: WHILE(do, expr)         1 { brkcnt--; fprintf(outfp, pfJNZ pfLABEL, mklbl(LEFT_CHILD(LEFT_CHILD(p))->place), mklbl(brklbl[brkcnt])); }
 
-do: DO(start, stmt)           
+do: DO(start, base)           1 {  }        
 
 start: START                  1 { p->place = ++lbl; fprintf(outfp, pfLABEL, mklbl(p->place)); brklbl[brkcnt++] = ++lbl; }     
 
 %! for 
 
-base: END(expr, FOR(in, END(stmt, expr))) { fprintf(outfp, pfJMP pfLABEL, mklbl(LEFT_CHILD( LEFT_CHILD( RIGHT_CHILD(p) ) )->place), mklbl(LEFT_CHILD( RIGHT_CHILD(p) )->place)); }
-in: IN(startFor, expr) {p->place = ++lbl; brklbl[brkcnt++] = p->place; fprintf(outfp, pfJZ, mklbl(p->place));}
+base: END(expr, FOR(in, END(base, expr))) { brkcnt--; fprintf(outfp, pfJMP pfLABEL, mklbl(LEFT_CHILD( LEFT_CHILD( RIGHT_CHILD(p) ) )->place), mklbl(LEFT_CHILD( RIGHT_CHILD(p) )->place)); }
+
+in: IN(startFor, expr)   1 { p->place = ++lbl; brklbl[brkcnt++] = p->place; fprintf(outfp, pfJZ, mklbl(p->place));}
 
 startFor: START          1 { p->place = ++lbl; fprintf(outfp, pfLABEL, mklbl(p->place)); }
+
 %! expressions
 
 %! Pointers and IDs
@@ -209,23 +211,23 @@ void variable(char *name, Node *type, Node *init, int public, int constant)
 
 }
 
-void defFunction(char *name, int enter, Node *stmt, Node *type)
+void defFunction(char *name, int enter, Node *base, Node *type)
 {
   int i;
   extern int errors, trace;
   extern char **yynames;
   if (errors) return;
-  if (trace) printNode(stmt, 0, yynames);
+  if (trace) printNode(base, 0, yynames);
   fflush(stdout);
   fprintf(outfp, pfTEXT pfALIGN pfGLOBL pfLABEL pfENTER, mkfunc(name), pfFUNC, mkfunc(name), enter * (pfWORD/4));
-  yyselect(stmt);
+  yyselect(base);
   if(type->value.i != 4){
     fprintf(outfp, pfLOCAL pfLOAD pfPOP, -type->info);
     if(type->info == 4){ fprintf(outfp, pfLOCAL pfLOAD pfPOP, -type->info); }
     else { fprintf(outfp, pfLOCAL pfLOAD pfDPOP, -type->info); }
   }
   fprintf(outfp, pfLEAVE pfRET); // just in case ... 
-  freeNode(stmt);
+  freeNode(base);
 
   
   for (i = 0; i < extcnt; i++)
