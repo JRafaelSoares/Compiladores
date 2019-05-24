@@ -13,6 +13,8 @@ extern void yyerror(const char*);
 char *dupstr(const char *s);
 
 int checkType(int type);
+double checkIndexType(int type);
+
 int lbl;
 char *mklbl(int n) {
   static char buf[20];
@@ -42,8 +44,15 @@ int checkIntRight(Node* n)    { return (RIGHT_CHILD(n)->info != 3) ? 1: MAX_COST
 int checkDoubleRight(Node* n) { return (RIGHT_CHILD(n)->info == 3 ) ? 1: MAX_COST;}
 int checkIntAlloc(Node* n)    { return (RIGHT_CHILD(n)->info != 13) ? 1: MAX_COST;}
 int checkDoubleAlloc(Node* n) { return (RIGHT_CHILD(n)->info == 13 ) ? 1: MAX_COST;}
-int checkIntLV(Node *n)       { return (n->info != 3) ? 1 : MAX_COST; }
+
+int checkIntLV(Node *n)       { return ((n->info == 1 && n->place != 2) || n->info == 2) ? 1 : MAX_COST; }
+int checkStringLV(Node *n)    { return (n->info == 1 && n->place == 2) ? 1 : MAX_COST; }
 int checkDoubleLV(Node *n)    { return (n->info == 3) ? 1 : MAX_COST; }
+
+int checkIntPtrLV(Node *n)       { return ((n->info == 1 && n->place != 2) || n->info == 2) ? 1 : MAX_COST; }
+int checkStringPtrLV(Node *n)    { return (n->info == 1 && n->place == 2) ? 1 : MAX_COST; }
+int checkDoublePtrLV(Node *n)    { return (n->place == 3) ? 1 : MAX_COST; }
+
 
 
 %}
@@ -61,7 +70,6 @@ list: base
 
 base: expr                    1 { if(p->info != 4) fprintf(outfp, pfTRASH, pfWORD); }
 base: rexpr                   1 { if(p->info != 4) fprintf(outfp, pfTRASH, pfWORD*2); }
-
 
 base: bloco 
 base: BREAK                   1 { fprintf(outfp, pfJMP, mklbl(brklbl[brkcnt - p->value.i])); }
@@ -106,11 +114,16 @@ ralloc:  expr                  1 { fprintf(outfp, pfIMM pfMUL pfALLOC pfSP, pfWO
 %! expressions
 
 %! Pointers and IDs
-expr: PTR(lv)                 checkIntLV { fprintf(outfp, pfLOAD); }      
-expr: PTR(PTR(lv))            checkIntLV { fprintf(outfp, pfLOAD pfLOAD); }     
+expr: PTR(lv)                 checkStringLV     { fprintf(outfp, pfLDCHR); }      
+expr: PTR(PTR(lv))            checkStringPtrLV  { fprintf(outfp, pfLOAD pfLDCHR); } 
 
-rexpr: PTR(lv)                checkDoubleLV { fprintf(outfp, pfLOAD2); }
-rexpr: PTR(PTR(lv))           checkDoubleLV { fprintf(outfp, pfLOAD2 pfLOAD2); }     
+expr: PTR(lv)                 checkIntLV        { fprintf(outfp, pfLOAD); }      
+expr: PTR(PTR(lv))            checkIntPtrLV     { fprintf(outfp, pfLOAD pfLOAD); }     
+
+rexpr: PTR(lv)                checkDoubleLV     { fprintf(outfp, pfLOAD2); }
+rexpr: PTR(PTR(lv))           checkDoublePtrLV  { fprintf(outfp, pfLOAD pfLOAD2); }  
+
+   
 
 %! values
 expr: INT                     1 { fprintf(outfp, pfIMM, p->value.i);}
@@ -185,7 +198,7 @@ expr: CALL(ID, VOID)          2 { fprintf(outfp, pfCALL, mkfunc(LEFT_CHILD(p)->v
 %! left values
 lv: ID                        1 { fprintf(outfp, pfADDR, p->value.s); }
 lv: LOCAL                     1 { fprintf(outfp, pfLOCAL, p->value.i); }
-lv: INDEX(lvec, expr)         3 { fprintf(outfp, pfIMM pfMUL pfADD, pfWORD*(p->info != 3 ? 1 : 2)); }
+lv: INDEX(lvec, expr)         3 { fprintf(outfp, pfIMM pfMUL pfADD, (int) (pfWORD*checkIndexType(p->place))); }
 
 lvec: lv                      1 {  fprintf(outfp, pfLOAD); }
 
@@ -197,7 +210,13 @@ args: ARGS(rexpr, NIL)        0 { p->place = (checkType(LEFT_CHILD(p)->info));}
 %%
 //expr: ATR(expr, LOCAL)        1 { fprintf(outfp, pfDUP pfLOCA, RIGHT_CHILD(p)->value.i * (pfWORD/4)); }
 
-
+double checkIndexType(int type){
+  switch(type){
+    case 1: return 1;
+    case 2: return 0.25;
+    case 3: return 2;
+  }
+}
 
 int checkType(int type){
   if(type / 10 != 0 && type == 3){

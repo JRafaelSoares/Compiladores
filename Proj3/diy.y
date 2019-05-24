@@ -22,7 +22,7 @@ static int ncicl;
 static char *fpar;
 
 static int pos = 8;
-static int posRet = -4;
+static int posRet = 0;
 %}
 
 %union {
@@ -129,8 +129,8 @@ stmt	: base
 
 base	: ';'                   { $$ = nilNode(VOID); }
 		| DO { ncicl++; } stmt WHILE expr ';' { $$ = binNode(WHILE, binNode(DO, nilNode(START), $3), $5); ncicl--; }
-		| FOR lv IN expr UPTO expr step DO { ncicl++; } stmt       { $$ = binNode(';', binNode(ATR, $4, $2), binNode(FOR, binNode(IN, nilNode(START), binNode(LE, uniNode(PTR, $2), $6)), binNode(';', $10, binNode(ATR, binNode('+', uniNode(PTR, $2), $7), $2)))); ncicl--; }
-		| FOR lv IN expr DOWNTO expr step DO { ncicl++; } stmt       { $$ = binNode(';', binNode(ATR, $4, $2), binNode(FOR, binNode(IN, nilNode(START), binNode(GE, uniNode(PTR, $2), $6)), binNode(';', $10, binNode(ATR, binNode('-', uniNode(PTR, $2), $7), $2)))); ncicl--; }
+		| FOR lv IN expr UPTO expr step DO { ncicl++; } stmt       { Node *n = uniNode(PTR, $2); n->info = $2->info; n->place = $2->place; $$ = binNode(';', binNode(ATR, $4, $2), binNode(FOR, binNode(IN, nilNode(START), binNode(LE, n, $6)), binNode(';', $10, binNode(ATR, binNode('+', n, $7), $2)))); ncicl--; }
+		| FOR lv IN expr DOWNTO expr step DO { ncicl++; } stmt       { Node *n = uniNode(PTR, $2); n->info = $2->info; n->place = $2->place; $$ = binNode(';', binNode(ATR, $4, $2), binNode(FOR, binNode(IN, nilNode(START), binNode(GE, n, $6)), binNode(';', $10, binNode(ATR, binNode('-', n, $7), $2)))); ncicl--; }
 		| IF expr THEN stmt %prec IFX    { $$ = binNode(IF, $2, $4); }
 		| IF expr THEN stmt ELSE stmt    { $$ = binNode(ELSE, binNode(IF, $2, $4), $6); }
 		| expr ';'              { $$ = $1; }
@@ -166,6 +166,7 @@ lv		: ID		{ long pos; int typ = IDfind($1, &pos);
                       if (pos == 0) $$ = strNode(ID, $1);
                       else $$ = intNode(LOCAL, pos);
 			  		  $$->info = typ;
+			  		  printf("\n\nTIPO: %d\n\n", typ);
 					}
 		| ID '[' expr ']' { Node *n;
                             long pos; int siz, typ = IDfind($1, &pos);
@@ -173,15 +174,17 @@ lv		: ID		{ long pos; int typ = IDfind($1, &pos);
                             if (pos == 0) n = strNode(ID, $1);
                             else n = intNode(LOCAL, pos);
                             $$ = binNode('[', n, $3);
-			    			if (typ >= 10) typ -= 10;
+                            $$->place = typ;
+			    			if (typ >= 10) {typ -= 10; $$->place = typ;}
                             else if (typ % 5 == 2) typ = 1;
 			    			if (typ >= 5) typ -= 5;
 			   				$$->info = typ;
+
 			  }
 		;
 
-expr	: lv		{ $$ = uniNode(PTR, $1); $$->info = $1->info; }
-	| '*' lv        { $$ = uniNode(PTR, uniNode(PTR, $2)); if ($2->info / 10 == 1) $$->info = $2->info % 10; else if ($2->info % 5 == 2) $$->info = 1; else yyerror("can dereference lvalue"); }
+expr	: lv		{ $$ = uniNode(PTR, $1); $$->info = $1->info; $$->place = $1->place;}
+	| '*' lv        { $$ = uniNode(PTR, uniNode(PTR, $2)); $$->place = $2->info; if ($2->info / 10 == 1) {$$->info = $2->info % 10; $$->place = $$->info;} else if ($2->info % 5 == 2) $$->info = 1; else yyerror("can dereference lvalue"); }
 	| lv ATR expr   { $$ = binNode(ATR, $3, $1); if ($$->info % 10 > 5) yyerror("constant value to assignment"); if (noassign($1, $3)) yyerror("illegal assignment"); $$->info = $1->info; }
 	| INT           { $$ = intNode(INT, $1); $$->info = 1; }
 	| STR           { $$ = strNode(STR, $1); $$->info = 2; }
@@ -260,7 +263,9 @@ void enter(int pub, int typ, char *name) {
 		IDnew(typ+20, name, (long)fpar);
 	IDpush();
 	if (typ != 4){ 
-		posRet = typ % 3 != 0 ? -4 : -8;
+		int aux = typ;
+		if(aux > 10) { aux -= 10; }
+		posRet = aux != 3 ? -4 : -8;
 		IDnew(typ, name, posRet);
 	}
 }
