@@ -49,7 +49,7 @@ int checkDoubleLV(Node *n)    { return (n->info == 3) ? 1 : MAX_COST; }
 %}
 %include "y.tab.h"
 %term FUNC='(' ARGS=',' BLOCK='{' END=';' 
-%term ADD='+' SUB='-' MUL='*' DIV='/' MOD='%' EQ='=' LT='<' GT='>' AND='&' OR='|' INDEX='[' ALLOC='#'
+%term ADD='+' SUB='-' MUL='*' DIV='/' MOD='%' EQ='=' LT='<' GT='>' AND='&' OR='|' INDEX='[' ALLOC='#' FACTORIAL='!'
 %%
 
 finit: FUNC(bloco)
@@ -133,6 +133,7 @@ expr: NOT(expr)               2 { fprintf(outfp, pfIMM pfEQ, 0); }
 expr: REF(lv)                 
 
 %! factorial
+rexpr: FACTORIAL(expr)         1 { fprintf(outfp, pfCALL pfTRASH pfDPUSH, "_factorial", pfWORD); }
 
 %! increment and decrement
 expr: INCR(lv)                3 { fprintf(outfp, pfDUP pfINCR pfLOAD, 1); }
@@ -176,7 +177,7 @@ or: expr                      3 { p->place = ++lbl; fprintf(outfp, pfDUP pfJNZ p
 
 %! Function calls
 expr: CALL(ID, args)          3 { fprintf(outfp, pfCALL pfTRASH, mkfunc(LEFT_CHILD(p)->value.s), (int)(pfWORD*(RIGHT_CHILD(p)->place)));
-                                 if(p->info % 5 != 4){ fprintf(outfp, pfPUSH);} }
+                                 if(p->info == 3){ fprintf(outfp, pfDPUSH);} else if(p->info != 4){ fprintf(outfp, pfPUSH); } }
 
 expr: CALL(ID, VOID)          2 { fprintf(outfp, pfCALL, mkfunc(LEFT_CHILD(p)->value.s));
                                   if(p->info % 5 != 4){ fprintf(outfp, pfPUSH);} }  
@@ -184,7 +185,7 @@ expr: CALL(ID, VOID)          2 { fprintf(outfp, pfCALL, mkfunc(LEFT_CHILD(p)->v
 %! left values
 lv: ID                        1 { fprintf(outfp, pfADDR, p->value.s); }
 lv: LOCAL                     1 { fprintf(outfp, pfLOCAL, p->value.i); }
-lv: INDEX(lvec, expr)         3 { fprintf(outfp, pfIMM pfMUL pfADD, pfWORD*(p->info == 1 ? 1 : 2)); }
+lv: INDEX(lvec, expr)         3 { fprintf(outfp, pfIMM pfMUL pfADD, pfWORD*(p->info != 3 ? 1 : 2)); }
 
 lvec: lv                      1 {  fprintf(outfp, pfLOAD); }
 
@@ -272,10 +273,14 @@ void defFunction(char *name, int enter, Node *base, Node *type)
   fflush(stdout);
   fprintf(outfp, pfTEXT pfALIGN pfGLOBL pfLABEL pfENTER, mkfunc(name), pfFUNC, mkfunc(name), enter * (pfWORD/4));
   yyselect(base);
+
   if(type->value.i != 4){
-    fprintf(outfp, pfLOCAL pfLOAD pfPOP, -type->info);
-    if(type->info == 4){ fprintf(outfp, pfLOCAL pfLOAD pfPOP, -type->info); }
-    else { fprintf(outfp, pfLOCAL pfLOAD pfDPOP, -type->info); }
+    if(type->info == 4){ 
+      fprintf(outfp, pfLOCAL pfLOAD pfPOP, -type->info); 
+    }
+    else { 
+      fprintf(outfp, pfLOCAL pfLOAD2 pfDPOP, -type->info); 
+    }
   }
   fprintf(outfp, pfLEAVE pfRET); // just in case ... 
   freeNode(base);

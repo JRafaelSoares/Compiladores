@@ -1,16 +1,16 @@
-Talloc
-Tblock     --
-Tbreak 	   --
-Tcontinue  --
-Tdoubleop  --
-Texterns   --
-Tfor 	   --
-Tif 	   --
-Tincr 	   --
-Tlocal     --
-Tmean 
-Toperation (falta o !) -/
-Tref 	   --
+Talloc 	   ---
+Tblock     ---
+Tbreak 	   ---
+Tcontinue  ---
+Tdoubleop  ---
+Texterns   ---
+Tfor 	   ---
+Tif 	   ---
+Tincr 	   ---
+Tlocal     ---
+Tmean  	   ?
+Toperation ---
+Tref 	   ---
 Tstring
-Tvariables --
-Twhile 	   --
+Tvariables ---
+Twhile 	   ---

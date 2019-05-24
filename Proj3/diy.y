@@ -80,7 +80,7 @@ ptr	:               { $$ = 0; }
 
 tipo	: INTEGER ptr	{ $$ = intNode(INTEGER, 1+$2); $$->info = 4;}
 		| STRING ptr	{ $$ = intNode(STRING, 2+$2); $$->info = 4;}
-		| NUMBER ptr	{ $$ = intNode(NUMBER, 3+$2); $$->info = 8;}
+		| NUMBER ptr	{ $$ = intNode(NUMBER, 3+$2); $$->info = ($2 ? 4 : 8);}
 		;
 
 init	: ATR ID ';'		{ $$ = strNode(ID, $2); $$->info = IDfind($2, 0) + 10; }
@@ -173,10 +173,10 @@ lv		: ID		{ long pos; int typ = IDfind($1, &pos);
                             if (pos == 0) n = strNode(ID, $1);
                             else n = intNode(LOCAL, pos);
                             $$ = binNode('[', n, $3);
-			    if (typ >= 10) typ -= 10;
+			    			if (typ >= 10) typ -= 10;
                             else if (typ % 5 == 2) typ = 1;
-			    if (typ >= 5) typ -= 5;
-			    $$->info = typ;
+			    			if (typ >= 5) typ -= 5;
+			   				$$->info = typ;
 			  }
 		;
 
@@ -189,7 +189,7 @@ expr	: lv		{ $$ = uniNode(PTR, $1); $$->info = $1->info; }
 	| '-' expr %prec UMINUS { $$ = uniNode(UMINUS, $2); $$->info = $2->info; nostring($2, $2);}
 	| '~' expr %prec UMINUS { $$ = uniNode(NOT, $2); $$->info = intonly($2, 0); }
 	| '&' lv %prec UMINUS   { $$ = uniNode(REF, $2); $$->info = $2->info + 10; }
-	| expr '!'             { $$ = uniNode('!', $1); $$->info = 3; intonly($1, 0); }
+	| expr '!'             { $$ = uniNode('!', $1); $$->info = 3; intonly($1, 0); extrnFunction("factorial");}
 	| INCR lv       { $$ = uniNode(INCR, $2); $$->info = intonly($2, 1); }
 	| DECR lv       { $$ = uniNode(DECR, $2); $$->info = intonly($2, 1); }
 	| lv INCR       { $$ = uniNode(POSINC, $1); $$->info = intonly($1, 1); }
